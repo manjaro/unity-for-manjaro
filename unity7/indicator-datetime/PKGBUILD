@@ -1,0 +1,58 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: György Balló <ballogy@freestart.hu>
+# Contributor: thn81 <root@scrat>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=indicator-datetime
+_actual_ver=15.10
+_extra_ver=+21.04.20210304
+pkgver=${_actual_ver}${_extra_ver/+/.}
+pkgrel=1
+pkgdesc="A very, very simple clock"
+arch=(i686 x86_64)
+url="https://launchpad.net/indicator-datetime"
+license=(GPL)
+# ubuntu-app-launch, uuid
+depends=(evolution-data-server gsettings-ubuntu-schemas gstreamer
+         indicator-messages libaccounts-glib libtimezonemap properties-cpp
+         unity-control-center)
+makedepends=(intltool cmake cmake-extras gtest gcr python-dbusmock dbus-test-runner gcc11)
+groups=(unity)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/${pkgname}_${_actual_ver}${_extra_ver}.orig.tar.gz")
+sha512sums=('SKIP')
+#            '1d1d7c6d50222fe972e61437f2c3dbfd2dfde1baf36e063e1514ae8afb3aa5c4e02562c0c13cbe8a8b6ce94abe5a0901b2bbbe64c3d0be042b1dbe6931ddd886')
+
+build() {
+    cd ${pkgname}-${_actual_ver}${_extra_ver}
+
+    export CC=gcc-11
+    export CXX=g++-11
+
+    export CFLAGS+=" -Wno-error"
+
+    mkdir -p build
+    cd build
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+        -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib \
+        -Denable_tests=OFF
+
+    make -j$(nproc)
+}
+
+package() {
+    cd ${pkgname}-${_actual_ver}${_extra_ver}
+
+    cd build
+
+    make DESTDIR="${pkgdir}/" install
+
+    # Use language packs
+    rm -r "${pkgdir}/usr/share/locale/"
+
+    rm -rv "${pkgdir}"/usr/share/upstart
+}

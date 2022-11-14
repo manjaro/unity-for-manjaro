@@ -1,0 +1,49 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: György Balló <ballogy@freestart.hu>
+# Contributor: thn81 <root@scrat>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=unity-lens-applications
+_actual_ver=7.1.0
+_extra_ver=+16.10.20160927
+pkgver=${_actual_ver}${_extra_ver/+/.}
+pkgrel=1
+epoch=1
+pkgdesc="A daemon that exposes you applications with their usage statistics and status to Unity"
+arch=(i686 x86_64)
+url="https://launchpad.net/unity-lens-applications"
+license=(GPL)
+depends=(dconf gnome-menus libcolumbus libgee libunity libzeitgeist
+         xapian-core zeitgeist-ubuntu)
+makedepends=(vala intltool)
+groups=(unity)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-lens-applications_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "vala-0.52.patch")
+sha512sums=('d93d556f2369fbf54b96f42c9c4b4899f3cf029ba22db375bb2549df0e4bd8052d25d77a328330894de7ecab4ae5ab5683bafc6ce6991be050eb1714a9792db5'
+            SKIP)
+
+build() {
+    patch -p1 -i vala-0.52.patch
+
+    aclocal --install --force
+    autoreconf -vfi
+    intltoolize -f
+
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --disable-static \
+        --libexecdir=/usr/lib/${pkgname} \
+        --disable-schemas-compile
+    make
+}
+
+package() {
+    make DESTDIR="${pkgdir}/" install
+
+    # Use language packs
+    rm -r "${pkgdir}/usr/locale/"
+}

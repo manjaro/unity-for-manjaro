@@ -1,0 +1,15 @@
+# Maintainer: Rudra Saraswat
+
+pkgname=unity-backgrounds
+pkgver=22.10
+pkgrel=1
+arch=(any)
+pkgdesc="Unity backgrounds included in 22.10"
+url="https://ubuntuunity.org"
+license=('GPL')
+source=('https://launchpad.net/ubuntu/+archive/primary/+files/ubuntu-unity-backgrounds_22.10.1-0ubuntu1_all.deb')
+md5sums=('SKIP')
+
+package() {
+	tar -xf data.tar.zst -C "${pkgdir}"
+}

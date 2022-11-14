@@ -1,0 +1,35 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=unity-lens-photos
+_actual_ver=1.0
+_extra_ver=+14.04.20140318
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=2
+epoch=1
+pkgdesc="Unity lens for browsing photos"
+arch=(any)
+url="https://launchpad.net/unity-lens-photos"
+license=(GPL)
+groups=(unity)
+depends=(python-httplib2 python-gobject python-oauthlib dee libunity libsoup)
+makedepends=(python python-distutils-extra)
+options=(!emptydirs)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-lens-photos_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "remove-goa-scopes.diff")
+sha512sums=('8a61f8966dcec0aad69d6134bd67a211a6bc78bc81f997022b2950a556a89b019e9c1d28b5cb1840d85f513d7b8b105f2148903bb03b29647a4302330d4de61d'
+            SKIP)
+
+package() {
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+
+    patch -p1 -i ../remove-goa-scopes.diff
+
+    python setup.py install --root="${pkgdir}/" --optimize=1
+
+    # Use language packs
+    rm -r "${pkgdir}/usr/share/locale/"
+}

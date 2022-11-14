@@ -1,0 +1,63 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=zesty
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=hud
+_actual_ver=14.10
+_extra_ver=+17.10.20170619
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+_ubuntu_rel=0ubuntu4
+pkgrel=1
+pkgdesc="Backend for the Unity HUD"
+arch=(i686 x86_64)
+url="https://launchpad.net/hud"
+license=(GPL)
+groups=(unity)
+depends=(bamf-ubuntu libdbusmenu-gtk3 sqlite gsettings-qt libcolumbus
+         libdbusmenu-qt5 dee-qt)
+makedepends=(cmake cmake-extras gnome-common gobject-introspection gtk-doc
+             intltool qt5-base python2-distribute vala)
+optdepends=('indicator-appmenu: HUD support')
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/hud_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "https://launchpad.net/ubuntu/+archive/primary/+files/hud_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz"
+        0001-Use-Python-2.patch
+        0002-Remove-test-dependencies.patch)
+sha512sums=('SKIP'
+            'SKIP'
+            '351ce207cc203e5901a20c30ff21cf186e330d7b4799a3bc43abca4039ec6e2de4abfa790266650cab112ad403675e6b926b368b7623ea3ecdb6a3c0c1b00fe5'
+            '3b2ed254cea8aa985c2c376a05f4ac496bc8673371d4beccf76b3b234e67bfb447c33ef830a53799df9e1526656a9ea60dc2c3b9ff0cf2e120b3625f84112152')
+
+prepare() {
+    cd "hud-${_actual_ver}${_extra_ver}"
+
+    patch -p1 -i "../hud_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff"
+
+    patch -p1 -i ../0001-Use-Python-2.patch
+    patch -p1 -i ../0002-Remove-test-dependencies.patch
+}
+
+build() {
+    cd "hud-${_actual_ver}${_extra_ver}"
+
+    export CXXFLAGS+=" -lc"
+
+    rm -rf build && mkdir build && cd build
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+        -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib \
+        -DENABLE_DOCUMENTATION=ON \
+        -DENABLE_TESTS=OFF \
+        -DENABLE_VOICE_TESTS=OFF \
+        -DENABLE_SCALABILITY_TESTS=OFF \
+        -DFULL_WARNINGS=ON
+
+    make
+}
+
+package() {
+    cd "hud-${_actual_ver}${_extra_ver}/build"
+    make DESTDIR="${pkgdir}/" install
+}

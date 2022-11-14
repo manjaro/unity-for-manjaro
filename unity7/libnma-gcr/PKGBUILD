@@ -1,0 +1,87 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgbase=libnma-gcr
+pkgname=(libnma-common-gcr libnma-gcr libnma-gtk4-gcr)
+pkgver=1.8.40
+pkgrel=1
+pkgdesc="NetworkManager GUI client library"
+url="https://gitlab.gnome.org/GNOME/libnma"
+arch=(x86_64)
+license=(GPL LGPL)
+makedepends=(gobject-introspection git gtk-doc meson vala libnm gcr gtk3 gtk4
+             iso-codes mobile-broadband-provider-info dconf)
+options=(debug)
+_commit=8f21d3b1f6825d2dad37f203649ac79e0e6ff171  # tags/1.8.40^0
+source=("git+https://gitlab.gnome.org/GNOME/libnma.git#commit=$_commit")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd libnma
+  git describe --tags | sed 's/-dev/dev/;s/[^-]*-g/r&/;s/-/+/g'
+}
+
+prepare() {
+  cd libnma
+}
+
+build() {
+  arch-meson libnma build -D libnma_gtk4=true
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_libnma-common-gcr() {
+  pkgdesc+=" (common files)"
+  depends=(libnm iso-codes mobile-broadband-provider-info dconf)
+  provides=(libnma-common)
+  conflicts=(libnma-common)
+
+  meson install -C build --destdir "$pkgdir"
+
+  cd "$pkgdir"
+
+  _pick gtk3 usr/lib/libnma.so*
+  _pick gtk3 usr/lib/pkgconfig/libnma.pc
+  _pick gtk3 usr/lib/girepository-1.0/NMA-*
+  _pick gtk3 usr/share/gir-1.0/NMA-*
+  _pick gtk3 usr/share/vala/vapi/libnma.*
+
+  _pick gtk4 usr/lib/libnma-gtk4.so*
+  _pick gtk4 usr/lib/pkgconfig/libnma-gtk4.pc
+  _pick gtk4 usr/lib/girepository-1.0/NMA4-*
+  _pick gtk4 usr/share/gir-1.0/NMA4-*
+  _pick gtk4 usr/share/vala/vapi/libnma-gtk4.*
+}
+
+package_libnma-gcr() {
+  pkgdesc+=" (GTK3)"
+  depends=(libnma-common-gcr="$pkgver-$pkgrel" gtk3 gcr)
+  provides=(libnma.so libnma)
+  conflicts=(libnma)
+
+  mv gtk3/* "$pkgdir"
+}
+
+package_libnma-gtk4-gcr() {
+  pkgdesc+=" (GTK4)"
+  depends=(libnma-common-gcr="$pkgver-$pkgrel" gtk4)
+  provides=(libnma-gtk4.so libnma-gtk4)
+  conflicts=(libnma-gtk4)
+
+  mv gtk4/* "$pkgdir"
+}
+
+# vim:set sw=2 et:

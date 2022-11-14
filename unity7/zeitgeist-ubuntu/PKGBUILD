@@ -1,0 +1,58 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: György Balló <ballogy@freestart.hu>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname%-*}, repo=kinetic
+# vercheck-launchpad: name=${pkgname%-*}
+
+pkgname=zeitgeist-ubuntu
+pkgver=1.0.3
+_ubuntu_rel=4ubuntu1
+pkgrel=1
+pkgdesc="Service logging user activities and events"
+arch=(i686 x86_64)
+url="http://zeitgeist-project.com/"
+license=(GPL2 LGPL2.1)
+depends=(json-glib telepathy-glib gtk3 xapian-core sqlite)
+makedepends=(gobject-introspection vala raptor python-rdflib git)
+provides=(zeitgeist-datahub "zeitgeist=${pkgver}")
+conflicts=(zeitgeist-datahub zeitgeist)
+replaces=(zeitgeist-datahub)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/zeitgeist_${pkgver}.orig.tar.xz"
+        "https://launchpad.net/ubuntu/+archive/primary/+files/zeitgeist_${pkgver}-${_ubuntu_rel}.debian.tar.xz"
+        "0001-use-genericarray-api-only.patch")
+sha512sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+    mv debian "zeitgeist-${pkgver}"
+    cd "zeitgeist-${pkgver}"
+
+    patch -p1 -i "${srcdir}/0001-use-genericarray-api-only.patch"
+
+    sed -i 's/python -/$PYTHON -/' configure configure.ac
+    sed -i '1s/python$/python2/' data/ontology2code
+
+    for i in $(grep -v '#' debian/patches/series); do
+        msg "Applying ${i}"
+        patch -p1 -i "debian/patches/${i}"
+    done
+
+    autoreconf -fi
+}
+
+build() {
+    cd "zeitgeist-${pkgver}"
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+        --libexecdir=/usr/lib --enable-fts
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+    make -j$(nproc)
+}
+
+package() {
+    cd "zeitgeist-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

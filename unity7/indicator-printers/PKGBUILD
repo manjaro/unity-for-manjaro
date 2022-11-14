@@ -1,0 +1,53 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=indicator-printers
+_ubuntu_rel=0ubuntu3
+_actual_ver=0.1.7
+_extra_ver=+17.10.20171101
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=1
+epoch=1
+pkgdesc="Indicator showing active print jobs"
+arch=(i686 x86_64)
+url="https://launchpad.net/indicator-printers"
+license=(GPL)
+groups=(unity)
+depends=(cups libdbusmenu-glib libdbusmenu-gtk3 libindicator-gtk3)
+makedepends=(intltool python2)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-printers_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "https://launchpad.net/ubuntu/+archive/primary/+files/indicator-printers_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz")
+sha512sums=('SKIP'
+            'SKIP')
+
+prepare() {
+    cd indicator-printers-${_actual_ver}${_extra_ver}/
+
+    # Apply Ubuntu's patches
+    patch -p1 -i ../indicator-printers_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff
+
+    sed -i '/SERVICE_LIBS/ i SERVICE_LIBS+=" "' configure.ac
+
+    NOCONFIGURE=1 ./autogen.sh
+}
+
+build() {
+    cd indicator-printers-${_actual_ver}${_extra_ver}/
+
+    ./configure --prefix=/usr --libexecdir=/usr/lib --disable-static
+    make
+}
+
+package() {
+    cd indicator-printers-${_actual_ver}${_extra_ver}/
+
+    make DESTDIR="${pkgdir}/" install
+
+    install -dm755 "${pkgdir}"/usr/share/icons/
+    cp -r debian/local/* "${pkgdir}"/usr/share/icons/
+
+    rm -rv "${pkgdir}"/usr/share/upstart/
+}

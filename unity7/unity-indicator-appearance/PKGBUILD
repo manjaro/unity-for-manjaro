@@ -1,0 +1,15 @@
+# Maintainer: Rudra Saraswat
+
+pkgname=unity-indicator-appearance
+pkgver=1.2
+pkgrel=1
+arch=(any)
+pkgdesc="Indicator to change theme or accent color"
+url="https://ubuntuunity.org"
+license=('GPL')
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-indicator-appearance_${pkgver}_all.deb")
+md5sums=('SKIP')
+
+package() {
+	tar -xf data.tar.zst -C "${pkgdir}"
+}

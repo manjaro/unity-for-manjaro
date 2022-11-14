@@ -1,0 +1,56 @@
+
+# Maintainer: Manuel Hüsers <aur@huesers.de>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: SleepyDog
+
+pkgname=glewmx-unity
+pkgver=1.13.0
+_ubuntu_rel=5
+pkgrel=1
+pkgdesc='The OpenGL Extension Wrangler MX'
+arch=('x86_64')
+url="http://launchpad.net/ubuntu/+source/glewmx"
+license=('GPL')
+depends=('libxmu' 'libxi' 'glu')
+provides=('glewmx')
+conflicts=('glewmx')
+source=(https://launchpad.net/ubuntu/+archive/primary/+files/glewmx_${pkgver}-${_ubuntu_rel}.debian.tar.xz
+        https://launchpad.net/ubuntu/+archive/primary/+files/glewmx_${pkgver}.orig.tar.gz)
+sha256sums=('SKIP'
+            'aa25dc48ed84b0b64b8d41cdd42c8f40f149c37fa2ffa39cd97f42c78d128bc7')
+
+prepare() {
+	cd "glew-${pkgver}"
+
+        mv ../debian .
+
+	for i in $(grep -v '#' debian/patches/series); do
+		patch -p1 -i "debian/patches/${i}"
+	done
+
+	sed -i 's|lib64|lib|' config/Makefile.linux
+	sed -i '/^.PHONY: .*\.pc$/d' Makefile
+}
+
+build() {
+	cd "glew-${pkgver}"
+
+	make -j$(nproc)
+}
+
+package() {
+	cd "glew-${pkgver}"
+
+	make GLEW_DEST="${pkgdir}/usr" install.all
+
+	mv "${pkgdir}/usr/include/GL/glew.h" "${pkgdir}/usr/include/GL/glewmx.h"
+        mv "${pkgdir}/usr/include/GL/glxew.h" "${pkgdir}/usr/include/GL/glxewmx.h"
+        mv "${pkgdir}/usr/include/GL/wglew.h" "${pkgdir}/usr/include/GL/wglewmx.h"
+
+	rm -R ${pkgdir}/usr/bin
+	rm ${pkgdir}/usr/lib/{libGLEW.so,libGLEW.a}
+	rm ${pkgdir}/usr/lib/pkgconfig/glew.pc
+
+	chmod 0755 "${pkgdir}"/usr/lib/libGLEW*.so.${pkgver}
+}

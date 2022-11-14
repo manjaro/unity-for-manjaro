@@ -1,0 +1,46 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=zesty
+
+pkgname=unity-gtk-module
+_actual_ver=0.0.0
+_extra_ver=+16.10.20160913
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=2
+epoch=2
+pkgdesc="Unity GTK+ Module"
+arch=(i686 x86_64)
+url="https://launchpad.net/unity-gtk-module"
+license=(GPL)
+groups=(unity)
+depends=(gtk3)
+makedepends=(gtk-doc)
+provides=(appmenu-gtk3)
+replaces=(appmenu-gtk3)
+conflicts=(appmenu-gtk3)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-gtk-module_${_actual_ver}${_extra_ver}.orig.tar.gz")
+sha512sums=('41579c144c3baf6ed2db047cce26db32aee9681a5d73a9f015d3ffd7ba08625ad13244b3f413c47decfc2e2ec304cd5592a7d0974157af993b5c1df21077c324')
+
+build() {
+    #cd "${pkgname}-${_actual_ver}${_extra_ver}"
+
+    autoreconf -vfi
+
+    [ -d build-gtk3 ] || mkdir build-gtk3
+    pushd build-gtk3
+    ../configure --prefix=/usr --sysconfdir=/etc --with-gtk=3 --enable-gtk-doc \
+                 --disable-static
+    make
+    popd
+}
+
+package() {
+    #cd "${pkgname}-${_actual_ver}${_extra_ver}"
+
+    pushd build-gtk3
+    make DESTDIR="${pkgdir}/" install
+    popd
+
+    rm -rv "${pkgdir}"/usr/share/upstart/
+}

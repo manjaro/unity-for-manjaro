@@ -1,0 +1,60 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: György Balló <ballogy@freestart.hu>
+# Contributor: thn81 <root@scrat>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=zesty
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=indicator-session
+_actual_ver=12.10.5
+_extra_ver=+17.04.20161114
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=1
+epoch=1
+pkgdesc="Indicator showing session management, status and user switching"
+arch=(i686 x86_64)
+url="https://launchpad.net/indicator-session"
+license=(GPL)
+depends=(gnome-settings-daemon)
+makedepends=(cmake intltool python2)
+optdepends=('lightdm: support for lightdm')
+groups=(unity)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-session_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        0001-There-is-no-help.patch
+        0002-Remove-url-dispatcher-dependency.patch
+        0003-Remove-libwhoopsie-dependency.patch)
+sha512sums=('6ca52336c1f48df04beb20b2b37e53d1f9554a8ac08ab967da1e76ef170c42b00b7024e5a3769d6832e5abf12b762edc569e5ecd54761d073f2d39151fa47e9f'
+            '96abc04783bd66affd976c3dd4ddeaedff244170b17c6a570b15bb30984b2a659c933e01fe28b3acc019a0dcd025c4035d1bf2d0b6c111f054bdb110029e5e05'
+            '2814334e66b44b2cc8db91ca72dbd2ac108f1a0b3e3770f3ada5ead83b65560e2c09e4168a405f4b3dc17c259b228668175526980deb1163e3ba359ca2d09a5a'
+            'fa069cf23804fbc29e01435c53619d95c755b0d3a674f90e7713d34ec70d92a9ef9e9cc8e2d4e1b2521580cf7f8d9a2961510de07a979ec1ba43bab98211e3b2')
+
+prepare() {
+    patch -p1 -i ../0001-There-is-no-help.patch
+    patch -p1 -i ../0002-Remove-url-dispatcher-dependency.patch
+    patch -p1 -i ../0003-Remove-libwhoopsie-dependency.patch
+}
+
+build() {
+    mkdir build && cd build
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBEXECDIR=lib \
+        -Denable_tests=OFF \
+        -Denable_lcov=OFF
+
+    make
+}
+
+package() {
+    cd build
+
+    make DESTDIR="${pkgdir}/" install
+
+    rm -vf "${pkgdir}/test-service"
+
+    # Use language packs
+    rm -r "${pkgdir}/usr/share/locale/"
+
+    rm -rv "${pkgdir}"/usr/share/upstart/
+}

@@ -1,0 +1,108 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# Based on Arch's gnome-control-center package
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+
+pkgname=unity-control-center
+_actual_ver=15.04.0
+_extra_ver=+22.10.20220916.1
+pkgver=${_actual_ver}${_extra_ver/+/.}
+pkgrel=1
+pkgdesc="The Control Center for Unity"
+arch=(i686 x86_64)
+groups=(unity)
+url="https://launchpad.net/unity-control-center"
+license=(GPL)
+depends=(accountsservice cups-pk-helper fcitx libnotify gnome-menus
+         gsettings-desktop-schemas-ubuntu gtk3-ubuntu libgtop libtimezonemap
+         network-manager-applet-ubuntu sound-theme-freedesktop upower
+         libpwquality smbclient gnome-color-manager libmm-glib libgnomekbd
+         grilo clutter-gtk unity-settings-daemon system-config-printer
+         webkit2gtk libgeonames yaru-unity-theme)
+makedepends=(gnome-common intltool docbook-xsl modemmanager
+             ttf-ubuntu-font-family vala)
+optdepends=('gnome-control-center: For online accounts & region panel')
+conflicts=(upower-compat)
+options=(!emptydirs)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-control-center_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        0001-Revert-54_enable_alt_tap_in_shortcut.patch.patch
+        0002-Skip-region-panel.patch
+        0003-Remove-Ubuntu-specific-language-code.patch
+        0005-Allow-gnome-control-center-to-run-at-the-same-time.patch
+        0006-Remove-overlay-scrollbar-from-GTK_MODULES.patch
+        0007-Rename-libgnome-bluetooth-to-libunity-bluetooth.patch
+        0008-Move-faces-images-usr-share-pixmaps-faces-unity.patch
+        system-config-printer-unity.desktop
+        unity-online-accounts-panel.desktop
+        unity-region-panel.desktop)
+sha512sums=('SKIP'
+            'f6e46818f7d3cda1d6750e49a136b1a04721ba01c7b626d1546d462c26811f9dad4d01cb45283abe8c18d710bb1e038233a052c4d2e8e0d5ccafe334208e2b8d'
+            '6d66849016f418c78676d25d3f4683c67e37d654089f07be73b0284b0551cd66c1ef0520d2779220db079e6979afc3844206c391fff4287b122f745215e27c8a'
+            'e5855a0724863adbf66964e41334a491a219b6e05272a7fd55be72370084e0501ec8d4653297935ea599201145436606f90c974720e18ab2d40087ec4ca82568'
+            '713173a8ebab0bd819ba27407a6ba4105ccf58d0298cc4669154a7058cd9e1e479423bbaa152978be9e7d42c0ce187a8010eea94d66949916344294ab4b0fa71'
+            '57934bc269544e78cb1a5b824f34d326877d270b11af2388eba99858d10f8fa75e6e523bd931f65f3e591fc6d8655afb9e47a788dc7c309a6e988f1942f9ee97'
+            '1025380f062e6583bc41f18d0d56937605603600e50a0a5cc57062e05f526fab3a9815c44973fe54798497a65bd45c080945de1f09e6b805894b6c6fbb7f8f2d'
+            '162338b35119d63e7211fad81f5bf0ee310240168e42a0d6f4f5563be300e3252b3732b199450bc4484b92ee5c0583663a482f45bf7c0d081f86204e3b1a880a'
+            '863e47afa95c8b16c8824c311c2b9d97b29f53153ee85a12989c63bbee4abb2e2626ef2d85988ac9d279baa60edcb32b65582acf4541f56fbc7efc22e2565de0'
+            '287bf010b9a6d9424e2f07f7271cd27fd9a0fb9e29ea704dbb211a67d23558c66c0c654ee2a23456cba69bee725e962fbe79713cc0d2ad0ba4d830b0053777e7'
+            '1378c3c15cb8c60575a55c86d400878f021c35adc87618c219496fee086b3c1286d7a46051747312960806330b6bb911a0c3e33814acedb2d83a1ef57d5e7a3a')
+
+prepare() {
+    #cd "${pkgname}-${_actual_ver}${_extra_ver}"
+    patch -p1 -i ../0001-Revert-54_enable_alt_tap_in_shortcut.patch.patch
+    patch -p1 -i ../0002-Skip-region-panel.patch
+    patch -p1 -i ../0003-Remove-Ubuntu-specific-language-code.patch
+    patch -p1 -i ../0005-Allow-gnome-control-center-to-run-at-the-same-time.patch
+    patch -p1 -i ../0006-Remove-overlay-scrollbar-from-GTK_MODULES.patch
+    patch -p1 -i ../0007-Rename-libgnome-bluetooth-to-libunity-bluetooth.patch
+    patch -p1 -i ../0008-Move-faces-images-usr-share-pixmaps-faces-unity.patch
+}
+
+build() {
+    #cd "${pkgname}-${_actual_ver}${_extra_ver}"
+
+    autoreconf -vfi
+    intltoolize -f
+
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --libexecdir=/usr/lib/${pkgname} \
+        --disable-static \
+        --enable-systemd \
+        --enable-fcitx
+
+    # https://bugzilla.gnome.org/show_bug.cgi?id=656229
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
+    make
+}
+
+package() {
+    #cd "${pkgname}-${_actual_ver}${_extra_ver}"
+
+    make DESTDIR="${pkgdir}" install
+
+    # Fix a warning
+    chown 102:0 "${pkgdir}/usr/share/polkit-1/rules.d/"
+    chmod 750 "${pkgdir}/usr/share/polkit-1/rules.d/"
+
+    # Use language packs
+    rm -r "${pkgdir}/usr/share/locale/"
+
+    panels/info/logo-generator \
+        --logo panels/info/UbuntuLogoBlank.png \
+        --text "Unity for Arch" \
+        --output "${pkgdir}/usr/share/unity-control-center/ui/UbuntuLogo.png"
+
+    # We'll just ship another desktop file for system-config-printer instead of
+    # providing a patched package
+    install -m644 "${srcdir}/system-config-printer-unity.desktop" \
+                  "${pkgdir}/usr/share/applications/"
+    install -m644 "${srcdir}/unity-online-accounts-panel.desktop" \
+                  "${pkgdir}/usr/share/applications/"
+    install -m644 "${srcdir}/unity-region-panel.desktop" \
+                  "${pkgdir}/usr/share/applications/"
+}

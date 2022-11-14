@@ -1,0 +1,17 @@
+# Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
+
+pkgname=unity-meta
+pkgver=1
+pkgrel=1
+pkgdesc='Metapackage for Unity on Arch'
+url='https://unity.ubuntuunity.org'
+arch=('any')
+license=('GPL')
+depends=(
+  unity compiz-ubuntu nux unity-session indicator-application indicator-bluetooth indicator-keyboard
+  indicator-power indicator-session indicator-appmenu indicator-datetime indicator-messages
+  indicator-printers indicator-sound lightdm-ubuntu lightdm-unity-greeter gtk3-ubuntu
+  unity-scope-home unity-lens-applications unity-lens-files unity-lens-music unity-lens-photos
+  unity-lens-video unity-settings unity-indicator-appearance gnome-terminal bluez firefox nemo
+  libreoffice unity-tweak-tool gnome-screenshot pluma eom atril xf86-input-synaptics engrampa
+)

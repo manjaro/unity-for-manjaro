@@ -1,0 +1,56 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+
+pkgname=indicator-keyboard
+_actual_ver=0.0.0
+_extra_ver=+19.10.20220803
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=1
+pkgdesc="Indicator for switching keyboard layouts and input methods"
+arch=(i686 x86_64)
+url="https://launchpad.net/indicator-keyboard"
+license=(GPL)
+groups=(unity)
+depends=(accountsservice fcitx gnome-desktop gucharmap ibus libgee libgnomekbd
+         lightdm-ubuntu unity-control-center)
+makedepends=(gobject-introspection intltool vala)
+conflicts=(ibus-ubuntu)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-keyboard_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        0002-Remove-code-depending-on-accountsservices-patch.patch
+        0003-Remove-unavailable-DBus-method-activate_input_source.patch
+        0004-Remove-unavailable-DBus-method-xkeyboard-layouts.patch
+        0005-Spawn-ibus-daemon-at-startup.patch)
+sha512sums=('SKIP'
+            '13c7de7533438c624bfccfcce2b23fea3d3c8f371e47eaa269f653c72dc931612cab2b7e9386eb5db4e08ccc7a9f5a7853c230c45c70cd63ad34b2ab86280909'
+            'c89f43cded3e9dbdac62843586bab9a120b858dc36e5b74b5d3d18c33f39fef9706a6d282ca4ede1bdb1789d5f63b8186376324781571b0f4162504b4c712ce2'
+            'b11b1675ff662f4c925800075e9869d7276bd4e345f2681a36b798b9520adb6844c12d8c7cb64dc8695224fe44722ba175b82c318ceb68455cb44f7ccdcbc515'
+            'f9aaf40e00057db27149256c36c5eef89506214d4d2fb91f4526d9371263583a3da9a6838ec057c94aad16e4756a50be0bd5a705d89c7cc9dff8612ada018e13')
+
+prepare() {
+    cd "indicator-keyboard-${_actual_ver}${_extra_ver}"
+
+    patch -p1 -i ../0002-Remove-code-depending-on-accountsservices-patch.patch
+    patch -p1 -i ../0003-Remove-unavailable-DBus-method-activate_input_source.patch
+    patch -p1 -i ../0004-Remove-unavailable-DBus-method-xkeyboard-layouts.patch
+    patch -p1 -i ../0005-Spawn-ibus-daemon-at-startup.patch
+
+    sed -i "s/string\[\] layouts = null/string\[\] layouts = new string\[0\]/g" lib/main.vala
+
+    intltoolize -f
+    autoreconf -vfi
+}
+
+build() {
+    cd "indicator-keyboard-${_actual_ver}${_extra_ver}"
+    ./configure --prefix=/usr --libexecdir=/usr/lib
+    make
+}
+
+package() {
+    cd "indicator-keyboard-${_actual_ver}${_extra_ver}"
+    make DESTDIR="${pkgdir}/" install
+
+    rm -rv "${pkgdir}"/usr/share/upstart/
+}

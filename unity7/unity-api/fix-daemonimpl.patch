@@ -1,0 +1,10 @@
+--- a/src/unity/util/internal/DaemonImpl.cpp	2017-04-04 15:06:44.000000000 +0530
++++ b/src/unity/util/internal/DaemonImpl.cpp	2022-10-27 15:18:50.044870705 +0530
+@@ -30,6 +30,7 @@
+ #include <cassert>
+ #include <sstream>
+ #include <vector>
++#include <functional>
+ 
+ using namespace std;
+ 

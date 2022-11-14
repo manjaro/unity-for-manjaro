@@ -1,0 +1,62 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: Balló György <ballogy@freestart.hu>
+# Contributor: thn81 <root@scrat>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=indicator-sound
+_actual_ver=12.10.2
+_extra_ver=+18.10.20180612
+_ubuntu_rel=0ubuntu4
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=1
+epoch=1
+pkgdesc="A unified sound menu"
+arch=(i686 x86_64)
+url="https://launchpad.net/indicator-sound"
+license=(GPL)
+depends=(accountsservice dconf gsettings-ubuntu-schemas libgee libnotify
+         libpulse libxml2 pulseaudio qt5-base unity-api unity-control-center)
+makedepends=(cmake gobject-introspection intltool vala)
+groups=(unity)
+options=(!emptydirs)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-sound_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "https://launchpad.net/ubuntu/+archive/primary/+files/indicator-sound_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz")
+sha512sums=('SKIP'
+            'SKIP')
+
+prepare() {
+    patch -p1 -i ./indicator-sound_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff
+
+    sed -i \
+        -e "s/TEST REQUIRED/TEST QUIET/" \
+        -e "/enable_testing()/d" \
+        -e "/add_subdirectory(tests)/d" \
+        -e '/url-dispatcher-1>=${URL_DISPATCHER_1_REQUIRED_VERSION}/d' \
+        CMakeLists.txt
+    sed -i \
+        -e "/add_definitions(/a -DVALA_EXTERN=extern" \
+        -e "/--pkg=url-dispatcher/d" \
+        src/CMakeLists.txt
+    rm vapi/url-dispatcher.vapi
+}
+
+build() {
+    [[ -d build ]] || mkdir build
+    pushd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBEXECDIR=lib
+    make
+    popd
+}
+
+package() {
+    cd build
+
+    make DESTDIR="${pkgdir}/" install
+
+    rm -v "${pkgdir}"/usr/var/lib/polkit-1/localauthority/10-vendor.d/50-com.canonical.indicator.sound.AccountsService.pkla
+
+    rm -rv "${pkgdir}"/usr/share/upstart/
+}

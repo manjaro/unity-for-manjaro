@@ -1,0 +1,25 @@
+# Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname%-*}, repo=kinetic
+# vercheck-archlinux: name=${pkgname%-*}, repo=extra, arch=x86_64
+# vercheck-gnome: name=${pkgname%-*}, majorver=3.22
+
+pkgname=unity-settings
+pkgver=22.10
+pkgrel=1
+pkgdesc="GSettings schemas for Unity"
+arch=(any)
+url="https://ubuntuunity.org/"
+license=(GPL)
+depends=(glib2 yaru-gtk-theme yaru-unity-theme yaru-icon-theme yaru-sound-theme unity-backgrounds ttf-ubuntu-font-family)
+source=("10_ubuntu-settings.gschema.override"
+        "20_ubuntu-unity.gschema.override")
+sha512sums=('SKIP'
+            'SKIP')
+
+package() {
+    mkdir -p ${pkgdir}/usr/share/glib-2.0/schemas
+    cp 10_ubuntu-settings.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
+    cp 20_ubuntu-unity.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
+}

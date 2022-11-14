@@ -1,0 +1,25 @@
+
+# Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
+
+pkgname=unity-session
+pkgver=43.0
+_ubuntu_rel=1ubuntu2
+pkgrel=1
+pkgdesc='Unity desktop experience'
+arch=('x86_64')
+url="http://packages.ubuntu.com/kinetic/unity-session"
+license=('GPL')
+depends=('dbus' 'unity-settings-daemon')
+makedepends=('binutils' 'zstd')
+source=(http://archive.ubuntu.com/ubuntu/pool/universe/g/gnome-session/unity-session_${pkgver}-${_ubuntu_rel}_all.deb
+        https://salsa.debian.org/gnome-team/gnome-session/-/raw/ubuntu/master/debian/data/run-systemd-session)
+sha256sums=('SKIP'
+            'SKIP')
+
+package() {
+	tar --zstd -xvf data.tar.zst -C ${pkgdir}
+	rm -rf ${pkgdir}/usr/share/doc
+
+	mkdir -p ${pkgdir}/usr/libexec
+	install -p -m755 run-systemd-session ${pkgdir}/usr/libexec/run-systemd-session
+}

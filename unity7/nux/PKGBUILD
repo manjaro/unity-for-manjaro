@@ -1,0 +1,71 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: György Balló <ballogy@freestart.hu>
+# Contributor: thn81 <root@scrat>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=nux
+_actual_ver=4.0.8
+_extra_ver=+18.10.20180623
+pkgver=${_actual_ver}${_extra_ver/+/.}
+_ubuntu_rel=0ubuntu4
+pkgrel=1
+pkgdesc="Graphical user interface toolkit for applications that mixes OpenGL hardware acceleration with high quality visual rendering"
+arch=(i686 x86_64)
+url="https://launchpad.net/nux"
+license=(LGPL)
+depends=(gdk-pixbuf2 glew glewmx pango mesa libsigc++ libxcomposite libxdamage
+         libxxf86vm geis ibus pciutils)
+makedepends=(boost xorgproto doxygen graphviz)
+
+groups=(unity)
+options=(!strip !docs libtool !emptydirs)
+
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/nux_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "https://launchpad.net/ubuntu/+archive/primary/+files/nux_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz"
+        0001_autoconf.patch
+        use_glewmx.patch
+        add_setupframebufferobject_clear.patch
+        50_check_unity_support)
+sha512sums=('SKIP'
+            'SKIP'
+            'e0a3d3d9cf7d4ba7da541a6383e5c545b37ce4099c1e7b716b18c47e68f0068d522ab06658f759df9c717503a46f0ca946ef2f256264c5c3fbb03fc7635038e2'
+            'SKIP'
+            'SKIP'
+            '1e82b11357f9db45fa6fff002cef11acaf53a8381e2bc28b84e9e0300502c0b1922d9273b44d4cfbbd51d004a9eb1eb2e780db7a39e2d9153c9c4efafb9314a9')
+
+prepare() {
+    patch -p1 -i "nux_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff"
+
+    # Apply Ubuntu patches
+    for i in $(grep -v '#' debian/patches/series); do
+        patch -p1 -i "debian/patches/${i}"
+    done
+
+    patch -p1 -i add_setupframebufferobject_clear.patch
+    patch -p1 -i 0001_autoconf.patch
+    patch -p1 -i use_glewmx.patch
+}
+
+build() {
+    export CFLAGS+=" -Wno-error"
+    export CXXFLAGS+=" -Wno-error -g -O0"
+
+    autoreconf -vfi
+
+    ./configure --prefix=/usr --libexecdir=/usr/lib --disable-static --disable-tests
+
+    make -j$(nproc)
+}
+
+package() {
+    make DESTDIR="${pkgdir}" install
+
+    #rm -rv "${pkgdir}/usr/share/nux/gputests/"
+
+    install -dm755 "${pkgdir}/etc/X11/xinit/xinitrc.d/"
+    install -m755 "${srcdir}/50_check_unity_support" \
+                  "${pkgdir}/etc/X11/xinit/xinitrc.d/"
+}

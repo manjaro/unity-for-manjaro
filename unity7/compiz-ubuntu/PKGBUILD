@@ -1,0 +1,143 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# Some comments are taken from the Ubuntu packaging files
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname%-*}, repo=kinetic
+# vercheck-launchpad: name=${pkgname%-*}
+
+_use_ppa=false
+
+pkgname=compiz-ubuntu
+
+epoch=1
+
+_actual_ver=0.9.14.2
+_extra_ver=+22.10.20220822
+_ubuntu_ver=1:0.9.14.2+22.10.20220822-0ubuntu1
+_ubuntu_repover=0.9.14.2+22.10.20220822-0ubuntu1
+
+if [[ "${_use_ppa}" != true ]]; then
+    _ubuntu_rel=0ubuntu1
+    _archive_dir="compiz-${_actual_ver}${_extra_ver}"
+else
+    _ppa_rel=0ubuntu3\+ppa1
+    _archive_dir=compiz.vivid
+fi
+
+pkgver=${_actual_ver}${_extra_ver/+/.}
+
+pkgrel=1
+pkgdesc="OpenGL window and compositing manager"
+url="http://www.compiz.org/"
+arch=(i686 x86_64)
+license=(GPL)
+depends=(boost-libs dbus fuse glibmm glu librsvg libxcomposite libxdamage
+         libxinerama libxrandr libxslt libwnck3 mesa metacity
+         startup-notification protobuf pygtk gsettings-desktop-schemas)
+# The schemas from gnome-settings-daemon are needed
+depends+=(gnome-settings-daemon)
+makedepends=(boost cmake intltool coreutils)
+# FIXME: For modifying rpath
+makedepends+=(patchelf)
+optdepends=('unity-control-center: Unity Control Center')
+groups=(unity)
+options=(emptydirs)
+conflicts=(compiz metacity-ubuntu)
+provides=(compiz-core compiz)
+
+if [[ "${_use_ppa}" != true ]]; then
+    source=("https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/compiz/${_ubuntu_ver}/compiz_${_ubuntu_repover}.tar.xz")
+else
+    source=("https://launchpad.net/~townsend/+archive/ubuntu/compiz-nvidia-refresh-test/+files/compiz_${_actual_ver}${_extra_ver}-${_ppa_rel}.tar.gz")
+fi
+
+source+=(compiz.reset
+         0001-Fix-cmake-install-directory.patch
+         0002-Fix-python-install-command.patch
+         0003-Use-Python-2.patch
+         0004-Disable-Werror.patch)
+sha512sums=('861d06d42bdfe1c9a55170fe4dc945b6cf7c7877353efc5fcadf6847b86769601be46d81df30b7e3b0a729a225344bbcc8076c906f087355604cc7c1e109450f'
+            '5f4b38c5fe3af9de0fe7897b9fdd04184dff9bf448f21ef19d9ae1b224c972061d8b183aa01cf8dcdf4fb37bb3466233ce53a6dfbbe51b0ff04f17568d2dc7ff'
+            '64b1a6f3cfc00e9c0c7c32d012d171b7452f8d1ea3afeaadf441316621226bbc85b75237c0726290d8552570ffbc5c4fef5c5cae2663da9369221145623dbdfa'
+            '122b7858413a7114573fdb2a8d8e30f78309b364963f4a45f474409fa3ecdfbe956368a0b014294710a1e4efd19593a6fef55f3e1ce40951d2379501295455e7'
+            '9c2c27af5d36a1f253638fd660755f514edc0712c0e261bea4580f6344788cda229049a514629fd432ea2d82920454f3a8b8d79c9b8849f2ba87efcf70c213bb'
+            '31601ebeaa200671557ff94a54e3518b9af50914ce24004c628b1bacbadd4da418cb2e9cba46cdfe206c83517311f31c6480fc7dc4bf4c7bcea73dde20e88ae5')
+options=(!strip !docs libtool emptydirs)
+
+prepare() {
+    #cd "${_archive_dir}"
+    cd compiz
+
+    # Fix the directory for FindCompiz.cmake and FindCompizConfig.cmake
+    patch -p1 -i ../0001-Fix-cmake-install-directory.patch
+
+    # Don't treat warnings as errors
+    patch -p1 -i ../0004-Disable-Werror.patch
+
+    for i in $(grep -v '#' debian/patches/series); do
+        msg "Applying ${i}"
+        patch -p1 -i "debian/patches/${i}"
+    done
+}
+
+build() {
+    #cd "${_archive_dir}"
+    cd compiz
+
+    # Fix build on i686
+    export CXXFLAGS+=" -lc"
+
+    # Disable '-Bsymbolic-functions' if present so libcompiz_core won't be
+    # loaded once per plugin
+    export LDFLAGS="$(echo ${LDFLAGS} | sed 's/-B[ ]*symbolic-functions//')"
+
+    # Disable rpath in Python 2 bindings
+    export COMPIZ_DISABLE_RPATH=1
+
+    # Compiz will segfault if the CMake built target is set to 'Release'
+    # Disable tests since they can't run on a headless build server
+
+    [[ -d build ]] && rm -rvf build/
+    mkdir build/
+    cd build/
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCOMPIZ_BUILD_WITH_RPATH=FALSE \
+        `# -DCMAKE_BUILD_TYPE=RelWithDebInfo` \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCOMPIZ_PACKAGING_ENABLED=TRUE \
+        -DUSE_GSETTINGS=ON \
+        -DCOMPIZ_DISABLE_GS_SCHEMAS_INSTALL=OFF \
+        -DCOMPIZ_BUILD_TESTING=OFF \
+        -DCOMPIZ_DISABLE_PLUGIN_KDE=ON \
+        -DUSE_KDE4=OFF \
+        `# Necessary for new versions of Compiz` \
+        `# https://bugs.launchpad.net/compiz/+bug/1070211` \
+        -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 \
+        -DPYTHON_LIBRARY=/usr/lib/libpython2.7.so \
+        -Dlibdir=/usr/lib \
+        -Dlibcompizconfig_libdir=/usr/lib
+
+    make -j$(nproc)
+}
+
+package() {
+    #cd "${_archive_dir}/build"
+    cd compiz/build
+    make install DESTDIR="${pkgdir}"
+
+    CMAKE_DIR=$(cmake --system-information | grep '^CMAKE_ROOT' \
+        | awk -F\" '{print $2}')
+    install -dm755 "${pkgdir}${CMAKE_DIR}/Modules/"
+    install -m644 ../cmake/FindCompiz.cmake \
+        "${pkgdir}${CMAKE_DIR}/Modules/"
+
+    desktop-file-install                            \
+        --delete-original                           \
+        --dir=${pkgdir}/usr/share/applications      \
+        ${pkgdir}/usr/share/applications/*.desktop
+
+    mkdir -p %{buildroot}%{_datadir}/compiz/icons/hicolor/{scalable/{apps,\
+        categories},22x22/{categories,devices,mimetypes}}
+}

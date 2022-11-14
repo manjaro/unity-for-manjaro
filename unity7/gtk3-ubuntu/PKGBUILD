@@ -1,0 +1,119 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Contributor: Christopher Reimer <github@creimer.net>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=gtk+3.0, repo=kinetic
+# vercheck-archlinux: name=gtk3, repo=extra, arch=x86_64
+# vercheck-gnome: name=gtk, majorver=3.24.34
+# vercheck-ppa: name=gtk+3.0, url=ppa:gnome3-team/gnome3-staging
+
+_use_ppa=false
+
+pkgname=gtk3-ubuntu
+_ubuntu_rel=3ubuntu2
+pkgver=3.24.34
+pkgrel=1
+epoch=1
+pkgdesc="GObject-based multi-platform toolkit"
+arch=(i686 x86_64)
+url="http://www.gtk.org/"
+install=gtk3.install
+depends=(atk cairo libxcursor libxinerama libxrandr libxi libepoxy gdk-pixbuf2
+         dconf libxcomposite libxdamage pango shared-mime-info at-spi2-atk
+         wayland libxkbcommon adwaita-icon-theme librsvg desktop-file-utils
+         mesa cantarell-fonts libcolord libcups fribidi iso-codes
+         libcloudproviders tracker3 gtk-update-icon-cache)
+makedepends=(gobject-introspection gtk-doc git glib2-docs sassc meson
+             wayland-protocols)
+provides=("gtk3=${pkgver}" gtk3-print-backends "libgtk-3.so=0-64" "libgdk-3.so=0-64" "libgailutil-3.so=0-64")
+conflicts=(gtk3 gtk3-print-backends)
+license=(LGPL)
+_commit=4e3a3f05533789e1a68c70c185e1755d386d6c47  # tags/3.24.34^0
+source=("git+https://github.com/GNOME/gtk.git#commit=$_commit"
+        settings.ini
+        gtk-query-immodules-3.0.hook)
+
+if [[ "${_use_ppa}" != "true" ]]; then
+  source+=("https://launchpad.net/ubuntu/+archive/primary/+files/gtk+3.0_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
+else
+  source+=("http://ppa.launchpad.net/gnome3-team/gnome3-staging/ubuntu/pool/main/g/gtk+3.0/gtk+3.0_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
+fi
+
+sha512sums=('SKIP'
+            'ad2c0b0388f4169592b9574f0b3db673a969b7c4721548c4ac7c438eddbcdc378fcaac04e2b6c858a1562cc23ddf4804e5f7be08068340b7c9365e2b11ddcfb8'
+            'f0ffd95544863f2e10fda81488b4727aa9a8a35a7d39fb96872db6664d03442db2b58af788b5990825c7b3a83681f7220ca481409cca5421dfb39b9a3bbac9ac'
+            'SKIP')
+
+pkgver() {
+    cd gtk
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd gtk
+
+    local patches=(
+        016_no_offscreen_widgets_grabbing.patch
+        017_no_offscreen_device_grabbing.patch
+        060_ignore-random-icons.patch
+        073_treeview_almost_fixed.patch
+        bzg_gtkcellrenderer_grabbing_modifier.patch
+        ubuntu_gtk_custom_menu_items.patch
+        print-dialog-show-options-of-remote-dnssd-printers.patch
+        uimanager-guard-against-nested-node-updates.patch
+        x-canonical-accel.patch
+        message-dialog-restore-traditional-look-on-unity.patch
+        0001-gtk-reftest-Force-icon-theme-to-Adwaita.patch
+        0001-calendar-always-emit-day-selected-once.patch
+        0001-gtkwindow-set-transparent-background-color.patch
+        unity-border-radius.patch
+        unity-headerbar-maximized-mode.patch
+    )
+
+    for i in "${patches[@]}"; do
+        msg "Applying ${i} ..."
+        patch -p1 -i "../debian/patches/${i}"
+    done
+
+    NOCONFIGURE=1 ./autogen.sh
+}
+
+build() {
+    cd gtk
+
+    CXX=/bin/false ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-schemas-compile \
+        --enable-x11-backend \
+        --enable-broadway-backend \
+        --enable-wayland-backend \
+        --enable-gtk-doc
+
+    #https://bugzilla.gnome.org/show_bug.cgi?id=655517
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+
+    make -j$(nproc)
+}
+
+package() {
+    cd gtk
+    make DESTDIR="${pkgdir}" install
+
+    install -Dm644 ../settings.ini \
+        "${pkgdir}"/usr/share/gtk-3.0/settings.ini
+    install -Dm644 ../gtk-query-immodules-3.0.hook \
+        "${pkgdir}"/usr/share/libalpm/hooks/gtk-query-immodules-3.0.hook
+
+    rm "${pkgdir}"/usr/bin/gtk-update-icon-cache
+    rm "${pkgdir}"/usr/share/man/man1/gtk-update-icon-cache.1
+
+    cd "$pkgdir"
+    for _f in usr/lib/*/*/printbackends/*; do
+        case $_f in
+            *-file.so|*-lpr.so) continue ;;
+            *) rm "${_f}" ;;
+        esac
+    done
+}

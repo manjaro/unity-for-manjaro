@@ -1,0 +1,35 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+
+_ubuntu_ver=0.0.7+-0ubuntu10
+
+pkgname=unity-tweak-tool
+pkgver=0.0.7
+pkgrel=1
+pkgdesc="Configuration tool for the Unity desktop"
+arch=(any)
+url="https://github.com/freyja-dev/unity-tweak-tool"
+license=(GPL)
+groups=(unity-extra)
+depends=(gtk3 hicolor-icon-theme notify-osd python python-xdg python-dbus
+         unity)
+makedepends=(intltool python-distutils-extra)
+options=(!emptydirs)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-tweak-tool_${pkgver}+.orig.tar.gz"
+        "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/unity-tweak-tool/${_ubuntu_ver}/unity-tweak-tool_${_ubuntu_ver}.debian.tar.xz")
+sha512sums=('SKIP'
+            'SKIP')
+
+prepare() {
+    cd unity-tweak-tool-${pkgver}
+    # Apply Ubuntu patches
+    for i in $(grep -v '#' ../debian/patches/series); do
+        patch -p1 -i "../debian/patches/${i}"
+    done
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    python setup.py install --root="${pkgdir}/" --optimize=1
+}

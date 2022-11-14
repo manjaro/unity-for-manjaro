@@ -1,0 +1,47 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=dee, repo=kinetic
+# vercheck-launchpad: name=dee
+
+pkgname=dee-ubuntu
+_actual_ver=1.2.7
+_extra_ver=+17.10.20170616
+pkgver=${_actual_ver}${_extra_ver/+/.}
+pkgrel=2
+epoch=1
+pkgdesc="Model to synchronize multiple instances over DBus"
+arch=(i686 x86_64)
+url="https://launchpad.net/dee"
+license=(LGPL)
+groups=(unity)
+depends=(dbus-glib glib2 icu python python-gobject python2 python-gobject)
+makedepends=(gnome-common gobject-introspection gtk-doc vala)
+provides=("dee=${pkgver}")
+conflicts=(dee)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/dee_${_actual_ver}${_extra_ver}.orig.tar.gz"
+         dee-1.2.7-fix-duplicates-vala-0.5X.patch
+         dee-1.2.7-deprecated-g_type_class_add_private.patch
+         vapi-skip-properties.patch)
+sha256sums=('SKIP'
+            '03acd7a0f80a89d7520df27396ba9771b3cc3688f759eee7283f8bcc3852a988'
+            'e9be91ded88cbb8256ea71d20a71be6ca8e304bc971902e28ffe9bba0ac1dc05'
+            'ba0f9f80e3827fc4e1e546e4011982512b5b09e8f66496b213a4bd319bf829f5')
+
+prepare() {
+    patch -Np1 -i dee-1.2.7-fix-duplicates-vala-0.5X.patch
+    patch -Np1 -i dee-1.2.7-deprecated-g_type_class_add_private.patch
+    patch -Np1 -i vapi-skip-properties.patch
+    autoreconf -fi
+}
+
+build() {
+    export PYTHON="/usr/bin/python"
+    ./configure --prefix="/usr" --sysconfdir="/etc" --localstatedir="/var" --disable-{static,tests}
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+    make
+}
+
+package() {
+    make DESTDIR="${pkgdir}" install
+}

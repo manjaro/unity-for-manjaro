@@ -1,0 +1,30 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=geonames, repo=yakkety
+
+pkgname=libgeonames
+_actual_ver=0.2
+_extra_ver=+16.04.20160426
+_ubuntu_rel=0ubuntu1
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=1
+pkgdesc="Library for parsing a local copy of the geonames.org database"
+arch=(i686 x86_64)
+url="https://git.launchpad.net/~larsu/geonames"
+license=(GPL)
+depends=(glib2)
+makedepends=(gtk-doc intltool)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/geonames_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.tar.gz")
+sha512sums=('c9f6c61d7213ece99d5ddfee7fb262f16541d1820a28b549f1fca5ff51a04e235e8e59901f8f6a69e68385e895d11e6c9987232a58a50b4905ad26c668626d58')
+
+build() {
+	cd geonames
+	./autogen.sh --prefix=/usr
+	make
+}
+
+package() {
+	cd geonames
+	make DESTDIR="${pkgdir}/" install
+}

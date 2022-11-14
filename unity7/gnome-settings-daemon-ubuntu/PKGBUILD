@@ -1,0 +1,70 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Original Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: thn81 <root@scrat>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname%-*}, repo=jammy
+# vercheck-archlinux: name=${pkgname%-*}, repo=extra, arch=x86_64
+# vercheck-gnome: name=${pkgname%-*}, majorver=43.0
+# vercheck-ppa: name=${pkgname%-*}, url=ppa:gnome3-team/gnome3-staging
+
+pkgname=gnome-settings-daemon-ubuntu
+_use_ppa=false
+#_ppa_rel=0ubuntu1~xenial1
+#_ppa_ver=3.20.1
+_ubuntu_rel=1ubuntu2
+#_ubuntu_ver=3.20.1
+pkgver=42.1
+pkgrel=1
+pkgdesc="GNOME Settings Daemon"
+url="https://git.gnome.org/browse/gnome-settings-daemon"
+arch=(i686 x86_64)
+license=(GPL)
+depends=(dconf gnome-desktop gsettings-desktop-schemas-ubuntu libcanberra-pulse
+         libnotify systemd libwacom pulseaudio pulseaudio-alsa upower librsvg
+         libgweather-4 geocode-glib geoclue nss libgudev gtk3-ubuntu libnm gcr)
+makedepends=(libxslt docbook-xsl python git meson usbguard)
+groups=(gnome unity)
+provides=("gnome-settings-daemon=${pkgver}")
+conflicts=(gnome-settings-daemon)
+_commit=946e4bbea6cc078776901459dc69fd65888b2a16
+source=("git+https://github.com/GNOME/gnome-settings-daemon.git#commit=${_commit}"
+        "git+https://github.com/GNOME/libgnome-volume-control.git")
+
+if [[ "${_use_ppa}" == "true" ]]; then
+    source+=("http://ppa.launchpad.net/gnome3-team/gnome3-staging/ubuntu/pool/main/g/gnome-settings-daemon/gnome-settings-daemon_${_ppa_ver:-${pkgver}}-${_ppa_rel}.debian.tar.xz")
+else
+    source+=("https://launchpad.net/ubuntu/+archive/primary/+files/gnome-settings-daemon_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
+fi
+
+sha512sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+pkgver() {
+    cd "${pkgname%-*}"
+    git describe --tags | sed 's/^GNOME_SETTINGS_DAEMON_//;s/_/./g;s/-/+/g'
+}
+
+prepare() {
+    cd "${pkgname%-*}"
+
+    git submodule init
+    git config --local submodule."panels/media-keys/gvc".url "${srcdir}/libgnome-volume-control"
+    git submodule update
+
+    # Apply Ubuntu's patches
+    patch -p1 -i ../debian/patches/ubuntu/lid-close-suspend-support.patch
+}
+
+build() {
+    cd "${pkgname%-*}"
+
+    meson --prefix=/usr --buildtype=plain . build
+    meson compile -C build
+}
+
+package() {
+    cd "${pkgname%-*}"
+    meson install -C build --destdir "$pkgdir"
+}

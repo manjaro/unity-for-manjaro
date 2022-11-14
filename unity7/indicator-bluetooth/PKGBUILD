@@ -1,0 +1,51 @@
+# Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname}, repo=kinetic
+# vercheck-launchpad: name=${pkgname}
+
+pkgname=indicator-bluetooth
+_actual_ver=0.0.6
+_extra_ver=+17.10.20170605
+pkgver=${_actual_ver}${_extra_ver/\+/.}
+pkgrel=1
+epoch=1
+pkgdesc="An indicator to connect to Bluetooth devices"
+arch=(i686 x86_64)
+url="https://launchpad.net/indicator-bluetooth"
+license=(GPL)
+depends=(dconf libnotify bluez)
+makedepends=(cmake intltool python3)
+groups=(unity)
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-bluetooth_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "remove-urldispatch.patch")
+sha512sums=('SKIP'
+            'SKIP')
+
+prepare() {
+    patch -p1 -i remove-urldispatch.patch
+
+    sed -i \
+        -e 's/gio-unix-2.0 >= $GIO_REQUIRED_VERSION/gio-unix-2.0 >= $GIO_REQUIRED_VERSION])/g' \
+        -e '/url-dispatcher-1 >= $URL_DISPATCHER_1_REQUIRED_VERSION])/d' \
+        configure.ac
+    rm vapi/url-dispatcher.vapi
+
+    intltoolize -f
+    autoreconf -vfi
+}
+
+build() {
+    export CFLAGS="-Wno-error"
+    ./configure --prefix=/usr --libexecdir=/usr/lib --disable-static
+
+    sed -i -e '/--pkg url-dispatcher \\/d' src/Makefile.in
+
+    make
+}
+
+package() {
+    make DESTDIR="${pkgdir}/" install
+
+    rm -rv "${pkgdir}"/usr/share/upstart/
+}
