@@ -17,7 +17,7 @@ pkgdesc="A small little library that was created by pulling out some comon code 
 arch=(i686 x86_64)
 url="https://launchpad.net/dbusmenu"
 license=(LGPL)
-makedepends=(json-glib gtk3 intltool gtk-doc gobject-introspection vala
+makedepends=(json-glib gtk2 gtk3 intltool gtk-doc gobject-introspection vala
              valgrind)
 groups=(unity)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/libdbusmenu_${_actual_ver}${_extra_ver}.orig.tar.gz"
