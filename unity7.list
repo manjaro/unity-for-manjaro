@@ -2,6 +2,7 @@ dbus-activation-env
 gtk3-ubuntu
 libdbusmenu-ubuntu
 ido
+pygtk
 libindicator
 libappindicator
 unity-gtk-module
