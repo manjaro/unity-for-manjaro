@@ -1,8 +1,18 @@
+python2
+python2-setuptools
+cython2
+python2-cairo
+python2-gobject2
+python2-numpy
+libglade
+pygtk
+ido
 dbus-activation-env
+gsettings-desktop-schemas-ubuntu
+gsettings-ubuntu-schemas
+libglvnd-1.4.0
 gtk3-ubuntu
 libdbusmenu-ubuntu
-ido
-pygtk
 libindicator
 libappindicator
 unity-gtk-module
@@ -12,8 +22,6 @@ libunity-misc
 indicator-messages
 bamf-ubuntu
 libtimezonemap
-gsettings-desktop-schemas-ubuntu
-gsettings-ubuntu-schemas
 gnome-settings-daemon-ubuntu
 gnome-screensaver-ubuntu
 unity-settings-daemon
@@ -41,7 +49,6 @@ glewmx-unity
 frame
 grail
 geis
-libglvnd-1.4.0
 nux
 unity-asset-pool
 zeitgeist-ubuntu
