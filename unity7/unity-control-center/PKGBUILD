@@ -94,7 +94,7 @@ package() {
 
     panels/info/logo-generator \
         --logo panels/info/UbuntuLogoBlank.png \
-        --text "Unity for Arch" \
+        --text "Unity for Manjaro" \
         --output "${pkgdir}/usr/share/unity-control-center/ui/UbuntuLogo.png"
 
     # We'll just ship another desktop file for system-config-printer instead of
