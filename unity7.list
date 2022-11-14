@@ -6,13 +6,13 @@ python2-gobject2
 python2-numpy
 libglade
 pygtk
-ido
 dbus-activation-env
 gsettings-desktop-schemas-ubuntu
 gsettings-ubuntu-schemas
 libglvnd-1.4.0
 gtk3-ubuntu
 libdbusmenu-ubuntu
+ido
 libindicator
 libappindicator
 unity-gtk-module
