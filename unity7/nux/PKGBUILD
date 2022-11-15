@@ -17,7 +17,7 @@ arch=(i686 x86_64)
 url="https://launchpad.net/nux"
 license=(LGPL)
 depends=(gdk-pixbuf2 glew glewmx pango mesa libsigc++ libxcomposite libxdamage
-         libxxf86vm geis ibus pciutils)
+         libxxf86vm geis ibus pciutils pcre)
 makedepends=(boost xorgproto doxygen graphviz)
 
 groups=(unity)

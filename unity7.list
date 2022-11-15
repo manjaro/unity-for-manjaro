@@ -1,3 +1,4 @@
+libglvnd-1.4.0
 python2
 python2-setuptools
 cython2
@@ -9,7 +10,6 @@ pygtk
 dbus-activation-env
 gsettings-desktop-schemas-ubuntu
 gsettings-ubuntu-schemas
-libglvnd-1.4.0
 gtk3-ubuntu
 libdbusmenu-ubuntu
 ido
