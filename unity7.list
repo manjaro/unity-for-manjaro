@@ -7,6 +7,7 @@ python2-gobject2
 python2-numpy
 gnome-mime-data
 gsettings-desktop-schemas-ubuntu
+gtk3-ubuntu
 libunique
 libglade
 libart-lgpl
@@ -18,7 +19,6 @@ gamin
 gnome-vfs
 libgnome
 libbonoboui
-gtk3-ubuntu
 pygtk
 dbus-activation-env
 gsettings-ubuntu-schemas
