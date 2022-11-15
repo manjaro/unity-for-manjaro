@@ -45,6 +45,7 @@ unity-control-center
 lightdm-ubuntu
 unity-api
 dbus-test-runner
+properties-cpp
 indicator-application
 indicator-appmenu
 indicator-datetime
