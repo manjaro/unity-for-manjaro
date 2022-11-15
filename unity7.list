@@ -6,6 +6,7 @@ python2-cairo
 python2-gobject2
 python2-numpy
 gnome-mime-data
+gsettings-desktop-schemas-ubuntu
 libunique
 libglade
 libart-lgpl
@@ -20,7 +21,6 @@ libbonoboui
 gtk3-ubuntu
 pygtk
 dbus-activation-env
-gsettings-desktop-schemas-ubuntu
 gsettings-ubuntu-schemas
 libdbusmenu-ubuntu
 ido
