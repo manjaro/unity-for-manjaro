@@ -13,13 +13,15 @@ libgnomecanvas
 orbit2
 libbonobo
 gconf
+gamin
+gnome-vfs
 libgnome
 libbonoboui
+gtk3-ubuntu
 pygtk
 dbus-activation-env
 gsettings-desktop-schemas-ubuntu
 gsettings-ubuntu-schemas
-gtk3-ubuntu
 libdbusmenu-ubuntu
 ido
 libindicator
