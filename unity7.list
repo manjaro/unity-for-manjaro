@@ -5,7 +5,16 @@ cython2
 python2-cairo
 python2-gobject2
 python2-numpy
+gnome-mime-data
+libunique
 libglade
+libart-lgpl
+libgnomecanvas
+orbit2
+libbonobo
+gconf
+libgnome
+libbonoboui
 pygtk
 dbus-activation-env
 gsettings-desktop-schemas-ubuntu
