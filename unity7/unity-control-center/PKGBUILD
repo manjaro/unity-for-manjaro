@@ -20,7 +20,7 @@ depends=(accountsservice cups-pk-helper fcitx libnotify gnome-menus
          network-manager-applet-ubuntu sound-theme-freedesktop upower
          libpwquality smbclient gnome-color-manager libmm-glib libgnomekbd
          grilo clutter-gtk unity-settings-daemon system-config-printer
-         webkit2gtk libgeonames yaru-unity-theme)
+         webkit2gtk libgeonames yaru-unity-theme gnome-online-accounts)
 makedepends=(gnome-common intltool docbook-xsl modemmanager
              ttf-ubuntu-font-family vala)
 optdepends=('gnome-control-center: For online accounts & region panel')
