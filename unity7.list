@@ -19,6 +19,7 @@ gamin
 gnome-vfs
 libgnome
 libbonoboui
+libgnomeui
 pygtk
 dbus-activation-env
 gsettings-ubuntu-schemas
