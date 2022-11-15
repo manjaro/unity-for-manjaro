@@ -18,7 +18,7 @@ jobs:
         
 ######### EDIT:
           package_list: unity7
-          release_tag: 2022-11-14-5
+          release_tag: 2022-11-14-6
           ## path to source repo
           source_url: https://github.com/manjaro/unity-for-manjaro.git
           source_folder: unity-for-manjaro
