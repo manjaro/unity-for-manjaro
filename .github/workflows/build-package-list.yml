@@ -1,7 +1,6 @@
 name: Build package-list
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
