@@ -1,0 +1,50 @@
+name: iso_build
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: styfle/cancel-workflow-action@0.10.1
+        with:
+          access_token: ${{ github.token }}
+      - id: time
+        uses: nanzm/get-time-action@v1.1
+        with:
+          format: 'YYYYMMDDHHmm'
+    outputs:
+      release_tag: ${{ steps.time.outputs.time }}      
+  release:
+    runs-on: ubuntu-20.04
+    needs: prepare-release    
+    strategy:
+      matrix:
+        ##### EDIT ME #####      
+        EDITION: [unity7]
+        BRANCH: [stable]
+        SCOPE: [full]
+        ###################       
+    steps:
+      - uses: styfle/cancel-workflow-action@0.10.1
+        with:
+          access_token: ${{ github.token }}
+      - id: image-build
+        uses: manjaro/manjaro-iso-action@feat/custom-repos
+        with:
+          edition: ${{ matrix.edition }}
+          branch: ${{ matrix.branch }}
+          scope: ${{ matrix.scope }}
+          version: "22.0.r${{ needs.prepare-release.outputs.release_tag }}"
+          kernel: linux60
+          code-name: "Sikaris"
+          custom-repo: "unity7"
+          custom-repo-url: "Server = https:\/\/manjaro.github.io\/unity-for-manjaro\/x86_64"
+          build-mirror: ${{ secrets.BUILD_MIRROR }}
+          release-tag: ${{ needs.prepare-release.outputs.release_tag }}
+      - name: rollback
+        if: ${{ failure() || cancelled() }}
+        run: |
+          echo ${{ github.token }} | gh auth login --with-token
+          gh release delete ${{ needs.prepare-release.outputs.release_tag }} -y --repo ${{ github.repository }}
+          git push --delete origin ${{ needs.prepare-release.outputs.release_tag }}
