@@ -6,7 +6,7 @@ Insert the following lines right above [extra] in /etc/pacman.conf:
 ```
    [unity7]
    SigLevel = Required DatabaseOptional
-   https://manjaro.github.io/unity-for-manjaro/x86_64/
+   Server = https://manjaro.github.io/unity-for-manjaro/x86_64/
 ```
 
 Install Unity:
