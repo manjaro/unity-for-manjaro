@@ -39,7 +39,7 @@ jobs:
           kernel: linux60
           code-name: "Sikaris"
           custom-repo: "unity7"
-          custom-repo-url: "Server = https:\/\/manjaro.github.io\/unity-for-manjaro\/x86_64"
+          custom-repo-url: 'Server = https:\/\/manjaro.github.io\/unity-for-manjaro\/x86_64'
           build-mirror: ${{ secrets.BUILD_MIRROR }}
           release-tag: ${{ needs.prepare-release.outputs.release_tag }}
       - name: rollback
