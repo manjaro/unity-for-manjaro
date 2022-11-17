@@ -1,0 +1,45 @@
+# Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
+# Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=gnome-session-bin
+pkgver=43.0
+pkgrel=1
+pkgdesc="Minimal runtime for GNOME Session Manager"
+url="https://gitlab.gnome.org/GNOME/gnome-session"
+arch=(x86_64)
+license=(GPL)
+depends=(systemd dconf gsettings-desktop-schemas gnome-desktop json-glib libgl
+         libsm libxtst)
+makedepends=(mesa gtk-doc xtrans git python xmlto docbook-xsl meson)
+groups=(gnome)
+options=(debug)
+conflicts=(gnome-session)
+provides=(gnome-session)
+_commit=620a5befb2cf04ba098f3f339ab040c9aecdc11d  # tags/43.0^0
+source=("git+https://gitlab.gnome.org/GNOME/gnome-session.git#commit=$_commit")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd gnome-session
+  git describe --tags | sed 's/\.beta/beta/;s/[^-]*-g/r&/;s/-/+/g'
+}
+
+prepare() {
+  cd gnome-session
+}
+
+build() {
+  arch-meson gnome-session build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "${pkgdir}"
+  rm -rf "${pkgdir}/usr/share/xsessions" "${pkgdir}/usr/share/wayland-sessions"
+}
+
+# vim:set sw=2 sts=-1 et:
