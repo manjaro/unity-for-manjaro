@@ -57,6 +57,7 @@ prepare() {
         patch -p1 -i "debian/patches/${i}"
     done
 
+    rm -f resources/launcher_bfb.svg
     cp ../launcher_bfb.png resources
 }
 
