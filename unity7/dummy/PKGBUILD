@@ -1,0 +1,11 @@
+pkgname=dummy
+pkgver=1
+pkgrel=1
+pkgdesc='Dummy pkg'
+arch=('i686' 'x86_64')
+url='https://manjaro.org'
+license=('GPL')
+
+package(){
+   echo packaging
+}
