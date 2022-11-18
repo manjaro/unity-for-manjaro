@@ -1,15 +1,15 @@
 # Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 
-pkgname=gnome-session-bin
+pkgname=gnome-session-unity
 pkgver=43.0
 pkgrel=1
-pkgdesc="Minimal runtime for GNOME Session Manager"
+pkgdesc="Minimal runtime for Unity Session"
 url="https://gitlab.gnome.org/GNOME/gnome-session"
 arch=(x86_64)
 license=(GPL)
 depends=(systemd dconf gsettings-desktop-schemas gnome-desktop json-glib libgl
-         libsm libxtst)
+         libsm libxtst gtk3-ubuntu)
 makedepends=(mesa gtk-doc xtrans git python xmlto docbook-xsl meson)
 groups=(gnome)
 options=(debug)

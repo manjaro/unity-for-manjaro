@@ -17,7 +17,7 @@ arch=(i686 x86_64)
 url="https://launchpad.net/unity"
 license=(GPL)
 depends=(appstream-glib bamf-ubuntu boost cairo compiz-ubuntu clutter-gtk gjs
-         gnome-desktop gnome-screensaver gnome-session-bin
+         gnome-desktop gnome-screensaver gnome-session-unity
          gsettings-ubuntu-schemas hud ido libgnomeui libindicator-gtk2
          libindicator-gtk3 libnotify libunique libunity libunity-misc libxfixes
          nux unity-asset-pool libxi lightdm-unity-greeter dbus-activation-env
