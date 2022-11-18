@@ -8,7 +8,7 @@ pkgdesc="Minimal runtime for Unity Session"
 url="https://gitlab.gnome.org/GNOME/gnome-session"
 arch=(x86_64)
 license=(GPL)
-depends=(systemd dconf gsettings-desktop-schemas gnome-desktop json-glib libgl
+depends=(systemd dconf gnome-settings-daemon-ubuntu gsettings-desktop-schemas gnome-desktop json-glib libgl
          libsm libxtst gtk3-ubuntu)
 makedepends=(mesa gtk-doc xtrans git python xmlto docbook-xsl meson)
 groups=(gnome)
