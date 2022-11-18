@@ -2,7 +2,7 @@
 
 pkgname=unity-meta
 pkgver=1
-pkgrel=2
+pkgrel=3
 pkgdesc='Metapackage for Unity on Arch'
 url='https://unity.ubuntuunity.org'
 arch=('any')
