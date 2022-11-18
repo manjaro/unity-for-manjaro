@@ -21,7 +21,7 @@ depends=(appstream-glib bamf-ubuntu boost cairo compiz-ubuntu clutter-gtk gjs
          gsettings-ubuntu-schemas hud ido libgnomeui libindicator-gtk2
          libindicator-gtk3 libnotify libunique libunity libunity-misc libxfixes
          nux unity-asset-pool libxi lightdm-unity-greeter dbus-activation-env
-         zeitgeist python-pyxdg notify-osd gnome-keyring)
+         zeitgeist python-pyxdg notify-osd gnome-keyring gsettings-desktop-schemas-ubuntu)
 makedepends=(chrpath cmake doxygen intltool patchutils pkg-config
              python-setuptools flex libglvnd-1.4.0)
 groups=(unity)
