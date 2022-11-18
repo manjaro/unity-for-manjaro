@@ -6,13 +6,13 @@ _ubuntu_ver=0.0.7+-0ubuntu10
 
 pkgname=unity-tweak-tool
 pkgver=0.0.7
-pkgrel=1
+pkgrel=2
 pkgdesc="Configuration tool for the Unity desktop"
 arch=(any)
 url="https://github.com/freyja-dev/unity-tweak-tool"
 license=(GPL)
 groups=(unity-extra)
-depends=(gtk3 hicolor-icon-theme notify-osd python python-xdg python-dbus
+depends=(gtk3-ubuntu hicolor-icon-theme notify-osd python python-xdg python-dbus
          unity)
 makedepends=(intltool python-distutils-extra)
 options=(!emptydirs)
