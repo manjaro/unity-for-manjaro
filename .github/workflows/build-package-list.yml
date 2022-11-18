@@ -7,7 +7,7 @@ jobs:
   build-pkgs:
     runs-on: ubuntu-20.04
     steps:
-      - uses: manjaro/manjaro-pkg-action@build_list
+      - uses: manjaro/manjaro-pkg-action@build_list-customrepo
         with:
           gpg-key: ${{ secrets.CI_PRIV_KEY }}
           gpg-passphrase: ${{ secrets.CI_GPG_PASSPHRASE }}
@@ -17,11 +17,12 @@ jobs:
         
 ######### EDIT:
           package_list: unity7
-          release_tag: 2022-11-14-6
+          release_tag: 2022-11-14-7
           ## path to source repo
           source_url: https://github.com/manjaro/unity-for-manjaro.git
           source_folder: unity-for-manjaro
           ## branch: (default: stable)
           branch: stable
           ## custom-repo - default: ""
-          custom-repo: ""
+          custom-repo: "unity7"
+          custom-repo-url: 'Server = https:\/\/manjaro.github.io\/unity-for-manjaro\/x86_64'
