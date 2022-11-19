@@ -1,0 +1,18 @@
+--- a/UnityTweakTool/section/spaghetti/gsettings.py	2022-11-19 20:17:53.241804236 +0530
++++ b/UnityTweakTool/section/spaghetti/gsettings.py	2022-11-19 20:09:06.547282565 +0530
+@@ -42,15 +42,6 @@
+         pass
+     else:
+         print("Error: schema %s not installed" % schema)
+-        builder=Gtk.Builder()
+-        builder.set_translation_domain('unity-tweak-tool')
+-        ui = os.path.join(data.get_data_path(),'errordialog.ui')
+-        builder.add_from_file(ui)
+-        dialog = builder.get_object('errordialog')
+-        message = schema + "\n\nIn order to work properly, Unity Tweak Tool recommends you install the necessary packages"
+-        dialog.format_secondary_text(message)
+-        dialog.run()
+-        sys.exit()
+ 
+ def test_key(schema, key):
+     if key in schema.list_keys():

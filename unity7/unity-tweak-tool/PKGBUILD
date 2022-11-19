@@ -13,23 +13,29 @@ url="https://github.com/freyja-dev/unity-tweak-tool"
 license=(GPL)
 groups=(unity-extra)
 depends=(gtk3-ubuntu hicolor-icon-theme notify-osd python python-xdg python-dbus
-         unity gsettings-desktop-schemas-ubuntu gsettings-ubuntu-schemas
-         indicator-bluetooth indicator-application indicator-appmenu
-         indicator-session indicator-power indicator-datetime indicator-keyboard
-         indicator-sound compiz-ubuntu gconf hud ido libunity-misc libunity)
+         unity compiz-ubuntu hud indicator-application indicator-appmenu
+         indicator-bluetooth indicator-datetime indicator-messages indicator-power
+         indicator-session indicator-sound libindicator-common libunity unity-lens-files
+         unity-lens-applications unity-lens-music unity-lens-photos unity-lens-video
+         unity-scope-home)
 makedepends=(intltool python-distutils-extra)
 options=(!emptydirs)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-tweak-tool_${pkgver}+.orig.tar.gz"
-        "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/unity-tweak-tool/${_ubuntu_ver}/unity-tweak-tool_${_ubuntu_ver}.debian.tar.xz")
+        "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/unity-tweak-tool/${_ubuntu_ver}/unity-tweak-tool_${_ubuntu_ver}.debian.tar.xz"
+        "../only_print_gschema_errors.patch")
 sha512sums=('SKIP'
+            'SKIP'
             'SKIP')
 
 prepare() {
     cd unity-tweak-tool-${pkgver}
+
     # Apply Ubuntu patches
     for i in $(grep -v '#' ../debian/patches/series); do
         patch -p1 -i "../debian/patches/${i}"
     done
+
+    patch -p1 -i ../only_print_gschema_errors.patch
 }
 
 package() {
