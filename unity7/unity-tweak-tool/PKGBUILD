@@ -16,7 +16,7 @@ depends=(gtk3-ubuntu hicolor-icon-theme notify-osd python python-xdg python-dbus
          unity gsettings-desktop-schemas-ubuntu gsettings-ubuntu-schemas
          indicator-bluetooth indicator-application indicator-appmenu
          indicator-session indicator-power indicator-datetime indicator-keyboard
-         indicator-sound)
+         indicator-sound compiz-ubuntu gconf hud ido libunity-misc libunity)
 makedepends=(intltool python-distutils-extra)
 options=(!emptydirs)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-tweak-tool_${pkgver}+.orig.tar.gz"
