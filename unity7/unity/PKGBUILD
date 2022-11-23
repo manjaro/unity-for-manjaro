@@ -31,7 +31,7 @@ source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity_${_actual_ve
         0004-Remove-social.scope.patch
         0005-Remove-xpathselect-dependency.patch
         filemanager.patch
-        launcher_bfb.png
+        launcher_bfb.svg
         unity-debug
         run_this_if_unity_is_on_fire.py
         unity.pam)
@@ -39,7 +39,7 @@ sha512sums=('SKIP'
             'cbeece65a35545e2f6704d568e0253f4370684ea935b9cbcaa388892a0f0848be2a022998502d5da31f4a68651fd4df095b80803cc3166ab72cd01a5cc712213'
             'SKIP'
             'SKIP'
-            'ec9ea91d79129b23aae6c4b9584fb396ecc572a0bafcac6229cc413ee441f610cb51ffce9383544c9fc62e747d5718be9be050850943eac4820095f190dc0ed0'
+            'd3ba5c513e1a07f10d5851d79498f31e81d573dcb271a2a36f70cd2cd525c0cf454048bcd78a07782792cfdcc052153a69ce3ef5d7710355b9d698f8858d2120'
             'b217490bf5eb5b0e83dbc9737b80b2ab9d7288362f370625f3c99d5a862c0e1947376b9fab4fdc9c2ddd4e8bd6e8d2ff5763a3a4391732f0781abbc60b159db5'
             'f76ce70ee8ad4a83c94a5919fcabadf7f82e90cf3c70079344e8ab4069dd41f9055f86e01ee5d96ff52819ed9979bdbe85c59e0d50aa4c511e5a20e19a9ea06d'
             'SKIP')
@@ -57,8 +57,12 @@ prepare() {
         patch -p1 -i "debian/patches/${i}"
     done
 
+    sed -i \
+        -e 's/"Ubuntu Desktop"/"Manjaro Unity"/' \
+        panel/PanelMenuView.cpp
+
     rm -f resources/launcher_bfb.svg
-    cp ../launcher_bfb.png resources
+    cp ../launcher_bfb.svg resources
 }
 
 build() {

@@ -7,19 +7,27 @@
 
 pkgname=unity-settings
 pkgver=22.10
-pkgrel=1
+pkgrel=2
 pkgdesc="GSettings schemas for Unity"
 arch=(any)
 url="https://ubuntuunity.org/"
 license=(GPL)
 depends=(glib2 yaru-gtk-theme yaru-unity-theme yaru-icon-theme yaru-sound-theme unity-backgrounds ttf-ubuntu-font-family)
 source=("10_ubuntu-settings.gschema.override"
-        "20_ubuntu-unity.gschema.override")
+        "40_manjaro-unity.gschema.override"
+        "10_ubuntu-settings.gschema.override"
+        "manjaro-unity-bg.xml"
+        "manjaro-unity.png")
 sha512sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
             'SKIP')
 
 package() {
-    mkdir -p ${pkgdir}/usr/share/glib-2.0/schemas
+    mkdir -p ${pkgdir}/usr/share/{glib-2.0/schemas,backgrounds,gnome-background-properties}
     cp 10_ubuntu-settings.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
-    cp 20_ubuntu-unity.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
+    cp 40_manjaro-unity.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
+    cp manjaro-unity.png ${pkgdir}/usr/share/backgrounds
+    cp manjaro-unity-bg.xml ${pkgdir}/usr/share/gnome-background-properties
 }
