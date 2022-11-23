@@ -23,17 +23,15 @@ optdepends=("ubuntu-themes: Ubuntu's Ambiance and Radiance themes"
             "ubuntu-wallpapers: Ubuntu's default wallpapers"
             "ttf-ubuntu-font-family: Ubuntu's default font")
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/${pkgname#*-}_${pkgver}-${_ubuntu_rel}.tar.xz"
-        manjarolinux-text-rounded.svg
         unity-greeter-indicators-start
         10-unity.defaults
         50-unity-greeter.rules
-        unity-greeter-logo.svg)
+        unity-greeter-logo.png)
 sha512sums=('a2cd39c6adfb98583bcfbdd505bc8107833a7a1edf4ff2f9316a53bf06b9e433d20b96c8362f6f16dba0276e2914bebc54cddbb21282c03bdce9e3ae21334360'
-            '3494f9e3ab6c689ec0bc4bd50593114854ed4a62a7e89b168e876fd20ed5469bfb457b60755f51618c5fbe1ab5ebe8a5e4e3d93f019bf917f130470781569d39'
             'e43c177d0255af961bbf9198868e32a1a762bb70e117f80c3c2ce4b54d23f4955cc1c4c32b68751b021116f8e6d26133b24845c03ae459c2209e8313e28a0bc6'
             'ee5d1f17dddd99ba55bbaca8aff5e8487c9b9f7e1eef570d2adb3d2519e19ef437b160414468ef85a8c1b14af1eee23c714e2086291701edfbab2f43064e2cd7'
             '5d0f1b8221dfe02670df3ba88011dc0ce744bfd4205a9900dd8096de222358a740a384a47f13ed4e5b94e24d4a8ff5639117464c61a689dd7bd9025a0900f529'
-            '245497d44a56e3e12e86e4d0a30593ff1f31b85141bad82784303e4892b42d7ef6be314e88b8389642f91f1e20d7ff55f0cc70f00b2de65b4518ef01d840691f')
+            '743006592f2f434d832933214f607f461e462956f0bc88fd9a0c46764ec3467084d730256069e502ea63205a1b08899b314a0ffad7d98390aca2a3c40f00c0c3')
 
 prepare() {
     cd "${pkgname#*-}-${pkgver}"
