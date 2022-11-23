@@ -7,12 +7,12 @@
 
 pkgname=unity-settings
 pkgver=22.10
-pkgrel=2
+pkgrel=3
 pkgdesc="GSettings schemas for Unity"
 arch=(any)
 url="https://ubuntuunity.org/"
 license=(GPL)
-depends=(glib2 yaru-gtk-theme yaru-unity-theme yaru-icon-theme yaru-sound-theme unity-backgrounds ttf-ubuntu-font-family)
+depends=(glib2 yaru-gtk-theme yaru-unity-theme yaru-icon-theme yaru-sound-theme ttf-ubuntu-font-family)
 source=("10_ubuntu-settings.gschema.override"
         "40_manjaro-unity.gschema.override"
         "10_ubuntu-settings.gschema.override"
