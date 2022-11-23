@@ -15,7 +15,8 @@ url="https://launchpad.net/unity-greeter"
 license=(GPL3 LGPL3)
 groups=(unity)
 depends=(cantarell-fonts ido libindicator-gtk3 lightdm-ubuntu
-         libcanberra libxext)
+         libcanberra libxext gnome-settings-daemon-ubuntu
+         gsettings-desktop-schemas-ubuntu)
 makedepends=(gnome-common unity-settings-daemon imagemagick
              intltool librsvg vala)
 optdepends=("ubuntu-themes: Ubuntu's Ambiance and Radiance themes"
