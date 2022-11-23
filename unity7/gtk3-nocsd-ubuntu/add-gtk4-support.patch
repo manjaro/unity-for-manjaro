@@ -1,0 +1,409 @@
+Description: add some description: Add Gtk4 Support
+Imported new upstream version 4 and fixed logic error in gtk_window_set_titlebar
+Imported from https://github.com/ZaWertun/gtk3-nocsd
+Author: Brett Bogert <bbogert24@gmail.com>
+Bug: https://bugs.launchpad.net/ubuntu/+source/gtk3-nocsd/+bug/1946161
+--- a/gtk3-nocsd.c
++++ b/gtk3-nocsd.c
+@@ -22,6 +22,7 @@
+ 
+ #define _GNU_SOURCE
+ #include <dlfcn.h>
++#include <link.h>
+ #include <unistd.h>
+ #include <string.h>
+ #include <stdlib.h>
+@@ -38,6 +39,16 @@
+ 
+ #include <gobject/gvaluecollector.h>
+ 
++#ifdef __FreeBSD__
++#include <sys/elf_generic.h>
++#define ElfW(t) Elf##_##t
++#endif
++
++#ifdef G_TYPE_INSTANCE_GET_PRIVATE
++#   undef G_TYPE_INSTANCE_GET_PRIVATE
++#endif
++#define G_TYPE_INSTANCE_GET_PRIVATE(instance, g_type, c_type)   ((c_type*) g_type_instance_get_private ((GTypeInstance*) (instance),(g_type)))
++
+ typedef void (*gtk_window_buildable_add_child_t) (GtkBuildable *buildable, GtkBuilder *builder, GObject *child, const gchar *type);
+ typedef GObject* (*gtk_dialog_constructor_t) (GType type, guint n_construct_properties, GObjectConstructParam *construct_params);
+ typedef char *(*gtk_check_version_t) (guint required_major, guint required_minor, guint required_micro);
+@@ -111,12 +122,17 @@ static void * volatile library_handles[N
+ static pthread_key_t key_tls;
+ static pthread_once_t key_tls_once = PTHREAD_ONCE_INIT;
+ 
++/* Marking both as volatile here saves the trouble of caring about
++ * memory barriers. */
++static volatile gboolean is_compatible_gtk_version_cached = FALSE;
++static volatile gboolean is_compatible_gtk_version_checked = FALSE;
++static volatile int gtk2_active;
++
+ typedef struct gtk3_nocsd_tls_data_t {
+   // When set to true, this override gdk_screen_is_composited() and let it
+   // return FALSE temporarily. Then, client-side decoration (CSD) cannot be initialized.
+   volatile int disable_composite;
+   volatile int signal_capture_handler;
+-  volatile int fake_global_decoration_layout;
+   volatile int in_info_collect;
+   const char *volatile  signal_capture_name;
+   volatile gpointer signal_capture_instance;
+@@ -140,6 +156,12 @@ static void *find_orig_function(int try_
+     void *handle;
+     void *symptr;
+ 
++    /* Ok, so in case both gtk2 + gtk3 are loaded, but we are using
++     * gtk2, we don't know what RTLD_NEXT is going to choose - so we
++     * must explicitly pick up the gtk2 versions... */
++    if (try_gtk2 && gtk2_active)
++        goto try_gtk2_version;
++
+     /* This will work in most cases, and is completely thread-safe. */
+     handle = dlsym(RTLD_NEXT, symbol);
+     if (handle)
+@@ -248,10 +270,12 @@ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY,
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_header_bar_set_show_close_button, void, (GtkHeaderBar *bar, gboolean setting), (bar, setting))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_header_bar_set_decoration_layout, void, (GtkHeaderBar *bar, const gchar *layout), (bar, layout))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_header_bar_get_decoration_layout, const gchar *, (GtkHeaderBar *bar), (bar))
++RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_header_bar_get_custom_title, GtkWidget *, (GtkHeaderBar *bar), (bar))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_style_context_add_class, void, (GtkStyleContext *context, const gchar *class_name), (context, class_name))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_style_context_remove_class, void, (GtkStyleContext *context, const gchar *class_name), (context, class_name))
+-RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_style_context_add_provider, void, (GtkStyleContext *context, GtkStyleProvider *provider, guint priority), (context, provider, priority))
++RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_style_context_add_provider_for_screen, void, (GdkScreen *screen, GtkStyleProvider *provider, guint priority), (screen, provider, priority))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_style_provider_get_type, GType, (), ())
++RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_hide, void, (GtkWidget *widget), (widget))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_destroy, void, (GtkWidget *widget), (widget))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_get_mapped, gboolean, (GtkWidget *widget), (widget))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_get_realized, gboolean, (GtkWidget *widget), (widget))
+@@ -262,6 +286,7 @@ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY,
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_realize, void, (GtkWidget *widget), (widget))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_get_settings, GtkSettings *, (GtkWidget *widget), (widget))
+ RUNTIME_IMPORT_FUNCTION(0, GTK_LIBRARY, gtk_widget_get_toplevel, GtkWidget *, (GtkWidget *widget), (widget))
++RUNTIME_IMPORT_FUNCTION(0, GDK_LIBRARY, gdk_screen_get_default, GdkScreen *, (), ())
+ RUNTIME_IMPORT_FUNCTION(0, GDK_LIBRARY, gdk_window_get_user_data, void, (GdkWindow *window, gpointer *data), (window, data))
+ RUNTIME_IMPORT_FUNCTION(1, GDK_LIBRARY, gdk_screen_is_composited, gboolean, (GdkScreen *screen), (screen))
+ RUNTIME_IMPORT_FUNCTION(1, GDK_LIBRARY, gdk_window_set_decorations, void, (GdkWindow *window, GdkWMDecoration decorations), (window, decorations))
+@@ -287,6 +312,7 @@ RUNTIME_IMPORT_FUNCTION(0, GOBJECT_LIBRA
+ RUNTIME_IMPORT_FUNCTION(0, GOBJECT_LIBRARY, g_value_unset, void, (GValue *value), (value))
+ RUNTIME_IMPORT_FUNCTION(0, GOBJECT_LIBRARY, g_value_get_string, const gchar *, (const GValue *value), (value))
+ RUNTIME_IMPORT_FUNCTION(0, GOBJECT_LIBRARY, g_value_get_boolean, gboolean, (const GValue *value), (value))
++RUNTIME_IMPORT_FUNCTION(0, GOBJECT_LIBRARY, g_type_name, const gchar *, (GType type), (type))
+ RUNTIME_IMPORT_FUNCTION(0, GLIB_LIBRARY, g_getenv, gchar *, (const char *name), (name))
+ RUNTIME_IMPORT_FUNCTION(0, GLIB_LIBRARY, g_logv, void, (const gchar *log_domain, GLogLevelFlags log_level, const gchar *format, va_list args), (log_domain, log_level, format, args))
+ RUNTIME_IMPORT_FUNCTION(0, GLIB_LIBRARY, g_free, void, (gpointer mem), (mem))
+@@ -314,10 +340,12 @@ RUNTIME_IMPORT_FUNCTION(0, GIREPOSITORY_
+ #define orig_gtk_header_bar_set_show_close_button        rtlookup_gtk_header_bar_set_show_close_button
+ #define orig_gtk_header_bar_set_decoration_layout        rtlookup_gtk_header_bar_set_decoration_layout
+ #define orig_gtk_header_bar_get_decoration_layout        rtlookup_gtk_header_bar_get_decoration_layout
++#define gtk_header_bar_get_custom_title                  rtlookup_gtk_header_bar_get_custom_title
+ #define gtk_style_context_add_class                      rtlookup_gtk_style_context_add_class
+ #define gtk_style_context_remove_class                   rtlookup_gtk_style_context_remove_class
+-#define gtk_style_context_add_provider                   rtlookup_gtk_style_context_add_provider
++#define gtk_style_context_add_provider_for_screen        rtlookup_gtk_style_context_add_provider_for_screen
+ #define gtk_style_provider_get_type                      rtlookup_gtk_style_provider_get_type
++#define gtk_widget_hide                                  rtlookup_gtk_widget_hide
+ #define gtk_widget_destroy                               rtlookup_gtk_widget_destroy
+ #define gtk_widget_get_mapped                            rtlookup_gtk_widget_get_mapped
+ #define gtk_widget_get_realized                          rtlookup_gtk_widget_get_realized
+@@ -326,9 +354,11 @@ RUNTIME_IMPORT_FUNCTION(0, GIREPOSITORY_
+ #define gtk_widget_set_parent                            rtlookup_gtk_widget_set_parent
+ #define gtk_widget_unrealize                             rtlookup_gtk_widget_unrealize
+ #define gtk_widget_realize                               rtlookup_gtk_widget_realize
++#define gdk_screen_get_default                           rtlookup_gdk_screen_get_default
+ #define gdk_window_get_user_data                         rtlookup_gdk_window_get_user_data
+ #define orig_gdk_screen_is_composited                    rtlookup_gdk_screen_is_composited
+ #define orig_gdk_window_set_decorations                  rtlookup_gdk_window_set_decorations
++#define g_list_free                                      rtlookup_g_list_free
+ #define g_object_get_data                                rtlookup_g_object_get_data
+ #define g_object_set_data                                rtlookup_g_object_set_data
+ #define g_type_check_class_cast                          rtlookup_g_type_check_class_cast
+@@ -337,12 +367,16 @@ RUNTIME_IMPORT_FUNCTION(0, GIREPOSITORY_
+ #define g_object_class_find_property                     rtlookup_g_object_class_find_property
+ #define g_object_get_valist                              rtlookup_g_object_get_valist
+ #define g_object_get_property                            rtlookup_g_object_get_property
++#ifdef g_object_ref
++#  undef g_object_ref
++#endif
+ #define g_object_ref                                     rtlookup_g_object_ref
+ #define g_object_unref                                   rtlookup_g_object_unref
+ #define g_value_init                                     rtlookup_g_value_init
+ #define g_value_unset                                    rtlookup_g_value_unset
+ #define g_value_get_string                               rtlookup_g_value_get_string
+ #define g_value_get_boolean                              rtlookup_g_value_get_boolean
++#define g_type_name                                      rtlookup_g_type_name
+ #define orig_g_type_register_static_simple               rtlookup_g_type_register_static_simple
+ #define orig_g_type_add_interface_static                 rtlookup_g_type_add_interface_static
+ #define orig_g_type_add_instance_private                 rtlookup_g_type_add_instance_private
+@@ -374,7 +408,43 @@ static void static_g_log(const gchar *lo
+     va_end (args);
+ }
+ 
+-static gboolean is_gtk_version_larger_or_equal(guint major, guint minor, guint micro) {
++int check_gtk2_callback(struct dl_phdr_info *info, size_t size, void *pointer)
++{
++    ElfW(Half) n;
++
++    if (G_UNLIKELY(strstr(info->dlpi_name, GDK_LIBRARY_SONAME_V2))) {
++        for (n = 0; n < info->dlpi_phnum; n++) {
++            uintptr_t start = (uintptr_t) (info->dlpi_addr + info->dlpi_phdr[n].p_vaddr);
++            uintptr_t end   = start + (uintptr_t) info->dlpi_phdr[n].p_memsz;
++            if ((uintptr_t) pointer >= start && (uintptr_t) pointer < end) {
++                gtk2_active = 1;
++                /* The gtk version check could have already been cached
++                 * before we were able to determine that gtk2 is in
++                 * use, so force this to FALSE. (Regardless of  the
++                 * _checked value.) */
++                is_compatible_gtk_version_cached = FALSE;
++                return 0;
++            }
++        }
++    }
++    return 0;
++}
++
++static void detect_gtk2(void *pointer)
++{
++    if (gtk2_active)
++        return;
++    /* There is a corner case where a program with plugins loads
++     * multiple plugins, some of which are linked against gtk2, while
++     * others are linked against gtk3. If the gtk2 plugins are used,
++     * this causes problems if we detect gtk3 just on the fact of
++     * whether gtk3 is loaded. Hence we iterate over all loaded
++     * libraries and if the pointer passed to us is within the memory
++     * region of gtk2, we set a global flag. */
++    dl_iterate_phdr(check_gtk2_callback, pointer);
++}
++
++static gboolean is_gtk_version_larger_or_equal2(guint major, guint minor, guint micro, int* gtk_loaded) {
+     static gtk_check_version_t orig_func = NULL;
+     if(!orig_func)
+         orig_func = (gtk_check_version_t)find_orig_function(0, GTK_LIBRARY, "gtk_check_version");
+@@ -388,9 +458,19 @@ static gboolean is_gtk_version_larger_or
+      * will give us a reference to gtk_check_version. But since
+      * that symbol is compatible with gtk3, this doesn't hurt.
+      */
+-     if (orig_func)
++     if (orig_func) {
++         if (gtk_loaded)
++             *gtk_loaded = TRUE;
+         return (orig_func(major, minor, micro) == NULL);
+-    return FALSE;
++     } else {
++         if (gtk_loaded)
++             *gtk_loaded = FALSE;
++        return FALSE;
++     }
++}
++
++static gboolean is_gtk_version_larger_or_equal(guint major, guint minor, guint micro) {
++    return is_gtk_version_larger_or_equal2(major, minor, micro, NULL);
+ }
+ 
+ static gboolean are_csd_disabled() {
+@@ -404,22 +484,27 @@ static gboolean are_csd_disabled() {
+ }
+ 
+ static gboolean is_compatible_gtk_version() {
+-    /* Marking both as volatile here saves the trouble of caring about
+-     * memory barriers. */
+-    static volatile gboolean checked = FALSE;
+-    static volatile gboolean compatible = FALSE;
++    int gtk_loaded = FALSE;
+ 
+-    if(G_UNLIKELY(!checked)) {
+-        if (!is_gtk_version_larger_or_equal(3, 10, 0)) {
++    if(G_UNLIKELY(!is_compatible_gtk_version_checked)) {
++        if (gtk2_active) {
++            is_compatible_gtk_version_cached = FALSE;
++	} else if (!is_gtk_version_larger_or_equal2(3, 10, 0, &gtk_loaded)) {
+             /* CSD was introduced there */
+-            compatible = FALSE;
++            is_compatible_gtk_version_cached = FALSE;
+         } else {
+-            compatible = TRUE;
++            is_compatible_gtk_version_cached = TRUE;
+         }
+-        checked = TRUE;
++        /* If in a dynamical program (e.g. using python-gi) Glib is loaded before
++         * Gtk, then the Gtk version check is executed before Gtk is even loaded,
++         * returning FALSE and caching it. This will not disable CSD if Gtk is
++         * loaded later. To circumvent this, cache the value only if we know that
++         * Gtk is loaded. */
++        if (gtk_loaded)
++            is_compatible_gtk_version_checked = TRUE;
+     }
+ 
+-    return compatible;
++    return is_compatible_gtk_version_cached;
+ }
+ 
+ static void set_has_custom_title(GtkWindow* window, gboolean set) {
+@@ -479,11 +564,18 @@ static GtkStyleProvider *get_custom_css_
+       "  border-color: transparent;\n"
+       "}\n"
+       ".background:not(.tiled):not(.maximized) .titlebar:backdrop,\n"
+-      ".background:not(.tiled):not(.maximized) .titlebar {\n"
++      ".background:not(.tiled):not(.maximized) .titlebar,"
++      ".background:not(.tiled):not(.maximized) .titlebar headerbar {\n"
+       "  border-top-left-radius: 0;\n"
+       "  border-top-right-radius: 0;\n"
+-      "}\n"
+-      "";
++      "}\n";
++    static int title_skipped = 0;
++
++    const char* env_show_header = getenv("GTK3NOCSD_SHOW_HEADER");
++    if (env_show_header && !strncmp(env_show_header, "1", 2) && !title_skipped) {
++        custom_css += 39; // skip CSS rule that hides title
++        title_skipped = 1;
++    }
+ 
+     if (G_UNLIKELY (provider == NULL)) {
+         GtkCssProvider *new_provider;
+@@ -507,16 +599,15 @@ static GtkStyleProvider *get_custom_css_
+ 
+ static void add_custom_css (GtkWidget *widget)
+ {
+-    GtkStyleContext *context = gtk_widget_get_style_context (widget);
+     GtkStyleProvider *my_provider = get_custom_css_provider ();
+-
+-    if (!context || !my_provider)
++    if (!my_provider)
+         return;
+ 
+     /* Use a higher priority than SETTINGS, but lower than APPLICATION.
+      * add_provider will make sure a given provider is not added twice.
+      */
+-    gtk_style_context_add_provider (context, my_provider, GTK_STYLE_PROVIDER_PRIORITY_SETTINGS + 50);
++    GdkScreen *screen = gdk_screen_get_default ();
++    gtk_style_context_add_provider_for_screen (screen, my_provider, GTK_STYLE_PROVIDER_PRIORITY_SETTINGS + 50);
+ }
+ 
+ // This API exists since gtk+ 3.10
+@@ -554,12 +645,6 @@ extern void gtk_window_set_titlebar (Gtk
+             }
+         }
+ 
+-        /* Remove any potential old title bar. We can't call
+-         * the static unset_titlebar() directly (not available),
+-         * so we call the full function; that shouldn't have
+-         * any side effects. */
+-        orig_gtk_window_set_titlebar (window, NULL);
+-
+         /* The solid-csd class is not removed when the titlebar
+          * is unset in Gtk (it's probably a bug), so unset it
+          * here explicitly, in case it's set. */
+@@ -577,6 +662,13 @@ extern void gtk_window_set_titlebar (Gtk
+             g_signal_connect (titlebar, "notify::title",
+                         G_CALLBACK (private_info.on_titlebar_title_notify), window);
+             private_info.on_titlebar_title_notify (GTK_HEADER_BAR (titlebar), NULL, window);
++
++            /* Hiding GtkHeaderBar when custom title wasn't set (only for GtkDialog windows) */
++            const GtkWidget* custom = gtk_header_bar_get_custom_title(GTK_HEADER_BAR (titlebar));
++            const gchar* window_type = G_OBJECT_TYPE_NAME(window);
++            if (custom == NULL && strcmp(window_type, "GtkDialog")) {
++                gtk_widget_hide(GTK_WIDGET (titlebar));
++            }
+         }
+ 
+         gtk_style_context_add_class (gtk_widget_get_style_context (titlebar),
+@@ -665,14 +757,10 @@ static void _gtk_header_bar_update_windo
+         r = _remove_buttons_from_layout (new_layout, *decoration_layout_ptr);
+         if (r == 0)
+             *decoration_layout_ptr = new_layout;
+-    } else {
+-        TLSD->fake_global_decoration_layout = 1;
+     }
+     info.update_window_buttons (bar);
+     if (*decoration_layout_ptr) {
+         *decoration_layout_ptr = orig_layout;
+-    } else {
+-        TLSD->fake_global_decoration_layout = 0;
+     }
+ }
+ 
+@@ -725,7 +813,7 @@ extern void g_object_get (gpointer _obje
+      * g_object_get(). */
+ 
+     va_start (var_args, first_property_name);
+-    if (G_UNLIKELY (TLSD->fake_global_decoration_layout)) {
++    if (are_csd_disabled()) {
+         name = first_property_name;
+         while (name) {
+             GValue value = G_VALUE_INIT;
+@@ -746,6 +834,10 @@ extern void g_object_get (gpointer _obje
+                 if (r == 0)
+                     s = new_layout;
+                 *v = g_strdup (s);
++            } else if (G_UNLIKELY (strcmp (name, "gtk-dialogs-use-header") == 0)) {
++                gboolean *v = va_arg (var_args, gboolean *);
++                // Save dialog will break if this prop has been set to TRUE (see #13)
++                *v = FALSE;
+             } else {
+                 G_VALUE_LCOPY (&value, var_args, 0, &error);
+                 if (error) {
+@@ -789,6 +881,11 @@ extern void gtk_header_bar_set_decoratio
+     }
+ }
+ 
++extern gboolean gtk_window_get_decorated (GtkWindow *window)
++{
++    return FALSE;
++}
++
+ extern gboolean gdk_screen_is_composited (GdkScreen *screen) {
+     /* With Gtk+3 3.16.1+ we reimplement gtk_window_set_titlebar ourselves, hence
+      * we don't want to re-use the compositing hack, especially since it causes
+@@ -1006,6 +1103,7 @@ GType g_type_register_static_simple (GTy
+         if(type_name && G_UNLIKELY(strcmp(type_name, "GtkWindow") == 0)) {
+             // override GtkWindowClass
+             orig_gtk_window_class_init = class_init;
++            detect_gtk2((void *) class_init);
+             if(is_compatible_gtk_version() && are_csd_disabled()) {
+                 class_init = (GClassInitFunc)fake_gtk_window_class_init;
+                 save_type = &gtk_window_type;
+@@ -1018,6 +1116,7 @@ GType g_type_register_static_simple (GTy
+         if(type_name && G_UNLIKELY(strcmp(type_name, "GtkDialog") == 0)) {
+             // override GtkDialogClass
+             orig_gtk_dialog_class_init = class_init;
++            detect_gtk2((void *) class_init);
+             if(is_compatible_gtk_version() && are_csd_disabled()) {
+                 class_init = (GClassInitFunc)fake_gtk_dialog_class_init;
+                 save_type = &gtk_dialog_type;
+@@ -1030,6 +1129,7 @@ GType g_type_register_static_simple (GTy
+         if(type_name && G_UNLIKELY(strcmp(type_name, "GtkHeaderBar") == 0)) {
+             // override GtkHeaderBarClass
+             orig_gtk_header_bar_class_init = class_init;
++            detect_gtk2((void *) class_init);
+             if(is_compatible_gtk_version() && are_csd_disabled()) {
+                 class_init = (GClassInitFunc)fake_gtk_header_bar_class_init;
+                 save_type = &gtk_header_bar_type;
+@@ -1042,6 +1142,7 @@ GType g_type_register_static_simple (GTy
+         if(type_name && G_UNLIKELY(strcmp(type_name, "GtkShortcutsWindow") == 0)) {
+             // override GtkShortcutsWindowClass
+             orig_gtk_shortcuts_window_init = instance_init;
++            detect_gtk2((void *) instance_init);
+             if(is_compatible_gtk_version() && are_csd_disabled()) {
+                 instance_init = (GInstanceInitFunc) fake_gtk_shortcuts_window_init;
+                 goto out;
+@@ -1095,6 +1196,9 @@ static void fake_gtk_dialog_buildable_in
+ }
+ 
+ void g_type_add_interface_static (GType instance_type, GType interface_type, const GInterfaceInfo *info) {
++    if (info && info->interface_init)
++        detect_gtk2((void *) info->interface_init);
++
+     if(is_compatible_gtk_version() && are_csd_disabled() && (instance_type == gtk_window_type || instance_type == gtk_dialog_type)) {
+         if(interface_type == GTK_TYPE_BUILDABLE) {
+             // register GtkBuildable interface for GtkWindow/GtkDialog class
+@@ -1248,7 +1352,7 @@ out:
+ 
+ static gtk_header_bar_private_info_t gtk_header_bar_private_info ()
+ {
+-    static volatile gtk_header_bar_private_info_t info = { (gsize) -1, NULL };
++    static volatile gtk_header_bar_private_info_t info = { (gsize) -1, NULL, NULL };
+     if (G_UNLIKELY (info.decoration_layout_offset == (gsize) -1)) {
+         /* Was only introduced in Gtk+3 >= 3.12. Unlikely that someone is
+          * still using such an old version, but be safe nevertheless. */

@@ -1,0 +1,58 @@
+# Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
+# Contributor:  Callum Parsey <neoninteger@protonmail.com>
+# Contributor: Sefa Eyeoglu <contact@scrumplex.net>
+# Contributor: Kazutoshi Noguchi <noguchi.kazutosi+lGlcOenS [at] gmail [dot] com>
+# Contributor: Marco Kundt <mrckndt [at] gmail [dot] com>
+
+pkgname=gtk3-nocsd-ubuntu
+pkgver=3_1ubuntu2
+_pkgver="${pkgver//_*ubuntu*/}"
+pkgrel=1
+pkgdesc="A hack to disable gtk+ 3 client side decoration"
+arch=("i686" "x86_64")
+url="https://github.com/ZaWertun/gtk3-nocsd"
+license=("LGPL")
+
+conflicts=("gtk3-nocsd")
+provides=("gtk3-nocsd")
+depends=("gtk3")
+
+makedepends=(
+    "git"
+    "gobject-introspection"
+)
+
+source=(
+    "https://launchpad.net/ubuntu/+archive/primary/+files/gtk3-nocsd_${_pkgver}.orig.tar.gz"
+    "add-gtk4-support.patch"
+    "30-gtk3-nocsd.sh"
+)
+
+sha512sums=(
+    "f5448a73dc1d577336eb83d9ae8457e2cc9846fe5990338e8608325083a6449cd066b31313c22c4d2742a443ccf042007f2aacf4d271ad7f6680e807127e6684"
+    "c24af83cfabc37bb49b26d5a98b3876c48e63e37f5a7ad2d2d0d876a3804150c9f1cd8e96a8215dc1da6a0b2c21dec4dc738e80fb2efc5696a4ca97155a70183"
+    "ef7a812887072a19b7b365fd393d808806d1bdb4beb2aa4e46af9cb690dc2a7abc8976a8e5875d91742f3029330ac9229feb6d50141e0c2d35f0d3d8a7400830"
+)
+
+install="$pkgname.install"
+
+prepare() {
+    cd gtk3-nocsd-3
+    patch -p1 -i ../add-gtk4-support.patch    
+}
+
+build() {
+    cd gtk3-nocsd-3
+    make
+}
+
+package() {
+    cd gtk3-nocsd-3
+    install -D -m 0755 gtk3-nocsd "${pkgdir}"/usr/bin/gtk3-nocsd
+    install -D -m 0644 gtk3-nocsd.1 "${pkgdir}"/usr/share/man/man1/gtk3-nocsd.1
+    install -D -m 0644 gtk3-nocsd.bash-completion "${pkgdir}"/usr/share/bash-completion/completions/gtk3-nocsd
+    install -D -m 0644 libgtk3-nocsd.so.0 "${pkgdir}"/usr/lib/libgtk3-nocsd.so.0
+
+    cd ..
+    install -D -m 0755 30-gtk3-nocsd.sh "${pkgdir}"/etc/X11/xinit/xinitrc.d/30-gtk3-nocsd.sh
+}
