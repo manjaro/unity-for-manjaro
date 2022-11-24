@@ -15,7 +15,7 @@ license=("LGPL")
 
 conflicts=("gtk3-nocsd")
 provides=("gtk3-nocsd")
-depends=("gtk3")
+depends=("gtk3-ubuntu")
 
 makedepends=(
     "git"
