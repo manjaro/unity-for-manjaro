@@ -7,7 +7,7 @@
 
 pkgname=unity-settings
 pkgver=22.10
-pkgrel=3
+pkgrel=4
 pkgdesc="GSettings schemas for Unity"
 arch=(any)
 url="https://ubuntuunity.org/"
