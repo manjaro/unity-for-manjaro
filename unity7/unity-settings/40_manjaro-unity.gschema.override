@@ -7,6 +7,9 @@ picture-uri-dark = 'file:///usr/share/backgrounds/manjaro-unity.png'
 [org.gnome.desktop.screensaver]
 picture-uri = 'file:///usr/share/backgrounds/manjaro-unity.png'
 
+[com.canonical.unity-greeter]
+background = '/usr/share/backgrounds/manjaro-unity.png'
+
 [org.gnome.desktop.wm.preferences]
 theme = "Yaru-dark"
 
