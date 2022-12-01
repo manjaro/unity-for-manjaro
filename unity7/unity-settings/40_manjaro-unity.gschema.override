@@ -15,7 +15,7 @@ theme = "Yaru-dark"
 
 [org.gnome.desktop.interface:Unity]
 gtk-theme = "Yaru-dark"
-icon-theme = "Yaru-purple-dark"
+icon-theme = "Yaru-prussiangreen-dark"
 cursor-theme = "Yaru"
 
 [com.canonical.unity-greeter]
