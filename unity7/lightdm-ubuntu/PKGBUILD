@@ -16,7 +16,8 @@ url="https://launchpad.net/lightdm"
 license=(GPL3 LGPL3)
 groups=(unity)
 makedepends=(glib2 gobject-introspection gtk-doc intltool itstool libgcrypt
-             libx11 libxcb libxdmcp libxklavier pam polkit qt5-base vala)
+             libx11 libxcb libxdmcp libxklavier pam polkit qt5-base vala
+             xorg-xrdb xorg-xmodmap yelp-tools)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/lightdm_${pkgver}.orig.tar.xz"
         "https://launchpad.net/ubuntu/+archive/primary/+files/lightdm_${pkgver}-${_ubuntu_rel}.debian.tar.xz"
         lightdm.service
