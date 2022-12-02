@@ -2,7 +2,7 @@
 
 pkgname=unity-meta
 pkgver=1
-pkgrel=6
+pkgrel=7
 pkgdesc='Metapackage for Unity on Arch'
 url='https://unity.ubuntuunity.org'
 arch=('any')
@@ -16,5 +16,5 @@ depends=(
   unity-lens-video unity-settings unity-indicator-appearance gnome-terminal bluez firefox nemo
   libreoffice unity-tweak-tool gnome-screenshot pluma eom atril xf86-input-synaptics engrampa
   zeitgeist-ubuntu unity-settings-daemon gnome-settings-daemon-ubuntu gsettings-desktop-schemas-ubuntu
-  gsettings-ubuntu-schemas gtk3-ubuntu lightdm-ubuntu unity-gtk-module
+  gsettings-ubuntu-schemas gtk3-nocsd-ubuntu lightdm-ubuntu unity-gtk-module
 )
