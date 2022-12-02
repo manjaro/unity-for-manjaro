@@ -16,7 +16,7 @@ url="https://www.freedesktop.org/software/accountsservice/"
 arch=(i686 x86_64)
 license=(GPL3)
 depends=(glib2 polkit systemd lightdm-ubuntu)
-makedepends=(intltool gtk-doc gobject-introspection git)
+makedepends=(intltool gtk-doc gobject-introspection python git libxslt docbook-xsl meson usbguard)
 provides=("accountsservice=${pkgver}")
 conflicts=(accountsservice)
 _commit=1ef3add46983af875adfed5d29954cbfb184f688  # tags/22.08.8^0
