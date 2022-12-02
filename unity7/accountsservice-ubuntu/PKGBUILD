@@ -1,0 +1,77 @@
+# Maintainer: Rudra Saraswat <rs2009@ubuntu.com>
+# Contributor: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+
+# vercheck-pkgbuild: auto
+# vercheck-ubuntu: name=${pkgname%-*}, repo=kinetic
+# vercheck-archlinux: name=${pkgname%-*}, repo=extra, arch=x86_64
+
+pkgname=accountsservice-ubuntu
+_ubuntu_rel=1ubuntu1
+_ubuntu_ver=22.08.8
+pkgver=22.08.8
+pkgrel=1
+pkgdesc="D-Bus interface for user account query and manipulation"
+url="https://www.freedesktop.org/software/accountsservice/"
+arch=(i686 x86_64)
+license=(GPL3)
+depends=(glib2 polkit systemd lightdm-ubuntu)
+makedepends=(intltool gtk-doc gobject-introspection git)
+provides=("accountsservice=${pkgver}")
+conflicts=(accountsservice)
+_commit=1ef3add46983af875adfed5d29954cbfb184f688  # tags/22.08.8^0
+source=("git+https://gitlab.freedesktop.org/accountsservice/accountsservice.git#commit=$_commit"
+        "https://launchpad.net/ubuntu/+archive/primary/+files/accountsservice_${pkgver}-${_ubuntu_rel}.debian.tar.xz")
+sha512sums=('SKIP'
+            'SKIP')
+
+pkgver() {
+    cd "${pkgname%-*}"
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd "${pkgname%-*}"
+
+    sed -i 's|/etc/gdm3/custom.conf|/etc/gdm/custom.conf|g' \
+        ../debian/patches/0007-add-lightdm-support.patch
+
+    sed -i \
+        `# Arch Linux uses wheel group for system administration` \
+        -e '/0002-create-and-manage-groups-like-on-a-ubuntu-system.patch/d' \
+        `# adduser is Debian-specific` \
+        -e '/0006-adduser_instead_of_useradd.patch/d' \
+        `# Language patches are still pretty specific to Ubuntu, though` \
+        `# Ubuntu is trying to get them merged upstream` \
+        -e '/0001-formats-locale-property.patch/d' \
+        -e '/0009-language-tools.patch/d' \
+        -e '/0010-set-language.patch/d' \
+        -e '/0012-add-keyboard-layout-support.patch/d' \
+        `# Ubuntu-specific` \
+        -e '/0005-gdm_config_file_path_ubuntu.patch/d' \
+        -e '/0016-add-input-sources-support.patch/d' \
+        -e '/0020-support-login.defs.patch/d' \
+        -e '/0021-support-extrausers.patch/d' \
+        -e '/1002-dont-override-standardoutput.patch/d' \
+        `# Does not apply cleanly` \
+        -e '/0002-On-startup-clean-out-the-data-of-removed-users.patch/d' \
+        -e '/0013-add-has-message-support.patch/d' \
+        `# Applied upstream` \
+        -e '/0018-wtmp-fix-logout-times.patch/d' \
+        -e '/0011-add-background-file-support.patch/d' \
+        ../debian/patches/series
+
+    for i in $(grep -v '#' ../debian/patches/series); do
+        msg "Applying ${i} ..."
+        patch -p1 -i "../debian/patches/${i}"
+    done
+}
+
+build() {
+  arch-meson accountsservice build
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "${pkgdir}"
+}

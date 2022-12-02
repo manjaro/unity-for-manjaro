@@ -7,27 +7,30 @@
 
 pkgname=unity-settings
 pkgver=22.10
-pkgrel=4
+pkgrel=5
 pkgdesc="GSettings schemas for Unity"
 arch=(any)
 url="https://ubuntuunity.org/"
 license=(GPL)
-depends=(glib2 yaru-gtk-theme yaru-unity-theme yaru-icon-theme yaru-sound-theme ttf-ubuntu-font-family)
+depends=(glib2 yaru-gtk-theme yaru-unity-theme yaru-icon-theme yaru-sound-theme ttf-ubuntu-font-family polkit-gnome)
 source=("10_ubuntu-settings.gschema.override"
         "40_manjaro-unity.gschema.override"
         "10_ubuntu-settings.gschema.override"
         "manjaro-unity-bg.xml"
-        "manjaro-unity.png")
+        "manjaro-unity.png"
+        "polkit-gnome-unity.desktop")
 sha512sums=('SKIP'
+            'SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
             'SKIP')
 
 package() {
-    mkdir -p ${pkgdir}/usr/share/{glib-2.0/schemas,backgrounds,gnome-background-properties}
+    mkdir -p ${pkgdir}/usr/share/{glib-2.0/schemas,backgrounds,gnome-background-properties} ${pkgdir}/etc/xdg/autostart
     cp 10_ubuntu-settings.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
     cp 40_manjaro-unity.gschema.override ${pkgdir}/usr/share/glib-2.0/schemas
     cp manjaro-unity.png ${pkgdir}/usr/share/backgrounds
     cp manjaro-unity-bg.xml ${pkgdir}/usr/share/gnome-background-properties
+    cp polkit-gnome-unity.desktop ${pkgdir}/etc/xdg/autostart
 }
