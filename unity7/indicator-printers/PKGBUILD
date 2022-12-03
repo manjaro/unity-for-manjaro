@@ -16,7 +16,7 @@ arch=(i686 x86_64)
 url="https://launchpad.net/indicator-printers"
 license=(GPL)
 groups=(unity)
-depends=(cups libdbusmenu-glib libdbusmenu-gtk3 libindicator-gtk3)
+depends=(cups libdbusmenu-glib libdbusmenu-gtk3 libindicator-gtk3 gnome-common)
 makedepends=(intltool)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-printers_${_actual_ver}${_extra_ver}.orig.tar.gz"
         "https://launchpad.net/ubuntu/+archive/primary/+files/indicator-printers_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz")
