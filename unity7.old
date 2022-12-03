@@ -8,7 +8,6 @@ orbit2
 gconf
 dbus-activation-env
 gsettings-ubuntu-schemas
-libdbusmenu-ubuntu
 ido
 libindicator
 libappindicator

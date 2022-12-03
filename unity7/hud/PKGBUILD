@@ -18,7 +18,7 @@ groups=(unity)
 depends=(bamf-ubuntu libdbusmenu-gtk3 sqlite gsettings-qt libcolumbus
          libdbusmenu-qt5 dee-qt)
 makedepends=(cmake cmake-extras gnome-common gobject-introspection gtk-doc
-             intltool qt5-base vala)
+             intltool qt5-base vala python-setuptools)
 optdepends=('indicator-appmenu: HUD support')
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/hud_${_actual_ver}${_extra_ver}.orig.tar.gz"
         "https://launchpad.net/ubuntu/+archive/primary/+files/hud_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz"

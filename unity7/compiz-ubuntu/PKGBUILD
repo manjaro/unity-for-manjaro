@@ -35,10 +35,10 @@ license=(GPL)
 depends=(boost-libs dbus fuse glibmm glu librsvg libxcomposite libxdamage
          libxinerama libxrandr libxslt libwnck3 mesa metacity
          startup-notification protobuf gsettings-desktop-schemas
-         python-gobject)
+         python-gobject cython)
 # The schemas from gnome-settings-daemon are needed
 depends+=(gnome-settings-daemon)
-makedepends=(boost cmake intltool coreutils)
+makedepends=(boost cmake intltool coreutils cython)
 # FIXME: For modifying rpath
 makedepends+=(patchelf)
 optdepends=('unity-control-center: Unity Control Center')
