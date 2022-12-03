@@ -1,2 +1,16 @@
 dummy
-lightdm-ubuntu
+bamf-ubuntu
+compiz-ubuntu
+dee-ubuntu
+hud
+indicator-power
+indicator-printers
+indicator-session
+libappindicator
+libdbusmenu-ubuntu
+libindicator
+libtimezonemap
+libunity
+unity-settings-daemon
+unity
+zeitgeist-ubuntu

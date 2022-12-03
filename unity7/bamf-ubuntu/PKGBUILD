@@ -10,7 +10,7 @@ pkgname=bamf-ubuntu
 _actual_ver=0.5.6
 _extra_ver=+22.04.20220217
 pkgver=${_actual_ver}${_extra_ver//[\~\+]/.}
-pkgrel=1
+pkgrel=2
 pkgdesc="Removes the headache of applications matching into a simple DBus daemon and c wrapper library"
 arch=(i686 x86_64)
 url="https://launchpad.net/bamf"
@@ -47,8 +47,6 @@ build() {
 
     gtkdocize
     autoreconf -vfi
-
-    export PYTHON=/usr/bin/python2
 
     ./configure \
         --prefix=/usr \

@@ -8,7 +8,7 @@ _ubuntu_rel=0ubuntu1
 _actual_ver=15.04.1
 _extra_ver=+21.10.20220802
 pkgver=${_actual_ver}${_extra_ver/\+/.}
-pkgrel=1
+pkgrel=2
 pkgdesc="Unity Settings Daemon"
 arch=(i686 x86_64)
 url="https://launchpad.net/unity-settings-daemon"
@@ -18,7 +18,7 @@ depends=(gnome-settings-daemon-ubuntu gsettings-desktop-schemas-ubuntu fcitx
          gperf hicolor-icon-theme ibus libappindicator-gtk3 libcanberra-pulse
          libnotify librsvg libsystemd libwacom libxkbfile mesa pulseaudio
          pulseaudio-alsa upower)
-makedepends=(intltool xf86-input-wacom libxslt docbook-xsl python2)
+makedepends=(intltool xf86-input-wacom libxslt docbook-xsl)
 conflicts=(gnome-desktop-compat upower-compat)
 #options=('!emptydirs')
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-settings-daemon_${_actual_ver}${_extra_ver}.orig.tar.gz"

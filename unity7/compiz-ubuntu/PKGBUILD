@@ -27,14 +27,15 @@ fi
 
 pkgver=${_actual_ver}${_extra_ver/+/.}
 
-pkgrel=1
+pkgrel=2
 pkgdesc="OpenGL window and compositing manager"
 url="http://www.compiz.org/"
 arch=(i686 x86_64)
 license=(GPL)
 depends=(boost-libs dbus fuse glibmm glu librsvg libxcomposite libxdamage
          libxinerama libxrandr libxslt libwnck3 mesa metacity
-         startup-notification protobuf pygtk gsettings-desktop-schemas)
+         startup-notification protobuf gsettings-desktop-schemas
+         python-gobject)
 # The schemas from gnome-settings-daemon are needed
 depends+=(gnome-settings-daemon)
 makedepends=(boost cmake intltool coreutils)
@@ -54,14 +55,10 @@ fi
 
 source+=(compiz.reset
          0001-Fix-cmake-install-directory.patch
-         0002-Fix-python-install-command.patch
-         0003-Use-Python-2.patch
          0004-Disable-Werror.patch)
 sha512sums=('861d06d42bdfe1c9a55170fe4dc945b6cf7c7877353efc5fcadf6847b86769601be46d81df30b7e3b0a729a225344bbcc8076c906f087355604cc7c1e109450f'
             '5f4b38c5fe3af9de0fe7897b9fdd04184dff9bf448f21ef19d9ae1b224c972061d8b183aa01cf8dcdf4fb37bb3466233ce53a6dfbbe51b0ff04f17568d2dc7ff'
             '64b1a6f3cfc00e9c0c7c32d012d171b7452f8d1ea3afeaadf441316621226bbc85b75237c0726290d8552570ffbc5c4fef5c5cae2663da9369221145623dbdfa'
-            '122b7858413a7114573fdb2a8d8e30f78309b364963f4a45f474409fa3ecdfbe956368a0b014294710a1e4efd19593a6fef55f3e1ce40951d2379501295455e7'
-            '9c2c27af5d36a1f253638fd660755f514edc0712c0e261bea4580f6344788cda229049a514629fd432ea2d82920454f3a8b8d79c9b8849f2ba87efcf70c213bb'
             '31601ebeaa200671557ff94a54e3518b9af50914ce24004c628b1bacbadd4da418cb2e9cba46cdfe206c83517311f31c6480fc7dc4bf4c7bcea73dde20e88ae5')
 options=(!strip !docs libtool emptydirs)
 
@@ -114,8 +111,8 @@ build() {
         -DUSE_KDE4=OFF \
         `# Necessary for new versions of Compiz` \
         `# https://bugs.launchpad.net/compiz/+bug/1070211` \
-        -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 \
-        -DPYTHON_LIBRARY=/usr/lib/libpython2.7.so \
+        -DPYTHON_INCLUDE_DIR=/usr/include/python3.10 \
+        -DPYTHON_LIBRARY=/usr/lib/libpython3.10.so \
         -Dlibdir=/usr/lib \
         -Dlibcompizconfig_libdir=/usr/lib
 

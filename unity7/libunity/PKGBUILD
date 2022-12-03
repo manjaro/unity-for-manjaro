@@ -11,13 +11,13 @@ _actual_ver=7.1.4
 _extra_ver=+19.04.20190319
 _ubuntu_rel=6build1
 pkgver=${_actual_ver}${_extra_ver/+/.}
-pkgrel=1
+pkgrel=2
 pkgdesc="A library for instrumenting and integrating with all aspects of the Unity shell"
 arch=(i686 x86_64)
 url="https://launchpad.net/libunity"
 license=(LGPL)
 depends=(dee-ubuntu libdbusmenu-glib gtk3)
-makedepends=(intltool vala python2 gobject-introspection)
+makedepends=(intltool vala gobject-introspection)
 groups=(unity)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/libunity_${_actual_ver}${_extra_ver}.orig.tar.gz"
         "https://launchpad.net/ubuntu/+archive/primary/+files/libunity_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz"
@@ -46,7 +46,7 @@ prepare() {
 build() {
     intltoolize -f
     autoreconf -vfi
-    ./configure --prefix=/usr --disable-static --enable-headless-tests PYTHON=python2
+    ./configure --prefix=/usr --disable-static --enable-headless-tests
     make -j1
 }
 

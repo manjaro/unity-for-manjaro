@@ -8,14 +8,14 @@ pkgname=dee-ubuntu
 _actual_ver=1.2.7
 _extra_ver=+17.10.20170616
 pkgver=${_actual_ver}${_extra_ver/+/.}
-pkgrel=2
+pkgrel=3
 epoch=1
 pkgdesc="Model to synchronize multiple instances over DBus"
 arch=(i686 x86_64)
 url="https://launchpad.net/dee"
 license=(LGPL)
 groups=(unity)
-depends=(dbus-glib glib2 icu python python-gobject python2 python-gobject)
+depends=(dbus-glib glib2 icu python python-gobject)
 makedepends=(gnome-common gobject-introspection gtk-doc vala)
 provides=("dee=${pkgver}")
 conflicts=(dee)

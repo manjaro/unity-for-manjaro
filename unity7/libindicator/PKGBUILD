@@ -7,17 +7,17 @@
 # vercheck-launchpad: name=${pkgbase}
 
 pkgbase=libindicator
-pkgname=(libindicator-common libindicator-gtk2 libindicator-gtk3)
+pkgname=(libindicator-common libindicator-gtk3)
 _actual_ver=16.10.0
 _extra_ver=+16.10.20160913
 pkgver=${_actual_ver}${_extra_ver/+/.}
-pkgrel=1
+pkgrel=2
 epoch=1
 pkgdesc="A set of symbols and convience functions that all indicators would like to use"
 arch=(i686 x86_64)
 url="https://launchpad.net/libindicator"
 license=(GPL)
-makedepends=(gtk2 gtk3 glib2 ido)
+makedepends=(gtk3 glib2 ido)
 groups=(unity)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/${pkgbase}_${_actual_ver}${_extra_ver}.orig.tar.gz")
 sha512sums=('d5a82fa3ee9db1b85680c348041aee88fe83d3f221d6f5b5abd2d4ac0394ece8fdfc146db88ad3a945496c4c3654ce121c60907c26b307015334537ccb73ba48')
@@ -28,12 +28,6 @@ build() {
     export CFLAGS+=" -Wno-error"
 
     autoreconf -vfi
-
-    [[ -d build-gtk2 ]] || mkdir build-gtk2
-    pushd build-gtk2
-    ../configure --prefix=/usr --libexecdir=/usr/lib/${pkgbase} --with-gtk=2 --disable-static
-    make -j1
-    popd
 
     [[ -d build-gtk3 ]] || mkdir build-gtk3
     pushd build-gtk3
@@ -51,17 +45,6 @@ package_libindicator-common() {
     make -j1 -C data DESTDIR="${pkgdir}/" install
 }
 
-package_libindicator-gtk2() {
-    pkgdesc+=" (GTK+ 2 library)"
-    depends=(cairo gtk2 glib2)
-
-    #cd "${pkgbase}-${_actual_ver}${_extra_ver}/build-gtk2"
-    cd build-gtk2
-
-    make -j1 -C libindicator DESTDIR="${pkgdir}/" install
-    make -j1 -C tools DESTDIR="${pkgdir}/" install
-}
-
 package_libindicator-gtk3() {
     pkgdesc+=" (GTK+ 3 library)"
     depends=(gtk3 glib2 ido)
@@ -72,7 +55,4 @@ package_libindicator-gtk3() {
 
     make -j1 -C libindicator DESTDIR="${pkgdir}/" install
     make -j1 -C tools DESTDIR="${pkgdir}/" install
-
-    # Identical in both packages, but Ubuntu puts it in the GTK 2 package
-    rm -vf "${pkgdir}/usr/share/libindicator/80indicator-debugging"
 }

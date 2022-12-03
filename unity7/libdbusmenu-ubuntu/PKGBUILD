@@ -11,14 +11,14 @@ pkgname=(libdbusmenu-glib-ubuntu libdbusmenu-gtk3-ubuntu)
 _actual_ver=16.04.1
 _extra_ver=+22.10.20220928.1
 pkgver=${_actual_ver}${_extra_ver/\+/.}
-pkgrel=1
+pkgrel=2
 epoch=1
 pkgdesc="A small little library that was created by pulling out some comon code out of indicator-applet"
 arch=(i686 x86_64)
 url="https://launchpad.net/dbusmenu"
 license=(LGPL)
-makedepends=(json-glib gtk2 gtk3 intltool gtk-doc gobject-introspection vala
-             valgrind)
+makedepends=(json-glib gtk3 intltool gtk-doc gobject-introspection vala
+             valgrind gtk2)
 groups=(unity)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/libdbusmenu_${_actual_ver}${_extra_ver}.orig.tar.gz"
         0001_autoconf.patch)
@@ -36,11 +36,12 @@ build() {
 
     export CFLAGS+=" -Wno-error"
 
+    sed -i 's/gtk+-2.0 >= $GTK_REQUIRED_VERSION//' configure.ac
+
     gtkdocize
     autoreconf -vfi
     intltoolize -f
 
-    # libdbusmenu-gtk2 won't install if libdbusmenu-glib is missing
     sed -i 's|$(DBUSMENUGTK_CFLAGS)|$(DBUSMENUGTK_CFLAGS) -L../libdbusmenu-glib/.libs|' libdbusmenu-gtk/Makefile.{am,in}
 
     [[ -d build-gtk3 ]] || mkdir build-gtk3

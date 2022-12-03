@@ -10,7 +10,7 @@
 pkgname=zeitgeist-ubuntu
 pkgver=1.0.3
 _ubuntu_rel=4ubuntu1
-pkgrel=1
+pkgrel=2
 pkgdesc="Service logging user activities and events"
 arch=(i686 x86_64)
 url="http://zeitgeist-project.com/"
@@ -32,9 +32,6 @@ prepare() {
     cd "zeitgeist-${pkgver}"
 
     patch -p1 -i "${srcdir}/0001-use-genericarray-api-only.patch"
-
-    sed -i 's/python -/$PYTHON -/' configure configure.ac
-    sed -i '1s/python$/python2/' data/ontology2code
 
     for i in $(grep -v '#' debian/patches/series); do
         msg "Applying ${i}"

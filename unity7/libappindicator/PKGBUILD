@@ -7,19 +7,18 @@
 # vercheck-launchpad: name=${pkgbase}
 
 pkgbase=libappindicator
-pkgname=(libappindicator-gtk2 libappindicator-gtk3)
+pkgname=(libappindicator-gtk3)
 _actual_ver=12.10.1
 _extra_ver=+20.10.20200706.1
 pkgver=${_actual_ver}${_extra_ver/\+/.}
-pkgrel=1
+pkgrel=2
 epoch=1
 pkgdesc="A library to allow applications to export a menu into the Unity Menu bar"
 arch=(i686 x86_64)
 url="https://launchpad.net/libappindicator"
 license=(LGPL)
-makedepends=(dbus-glib libindicator-gtk2 libindicator-gtk3 libdbusmenu-gtk2
-             libdbusmenu-gtk3 gobject-introspection vala gtk-sharp-2 pygtk
-             perl-xml-libxml gtk-doc)
+makedepends=(dbus-glib libindicator-gtk3 libdbusmenu-gtk3 gobject-introspection
+             vala gtk-sharp-2 perl-xml-libxml gtk-doc)
 groups=(unity)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/${pkgbase}_${_actual_ver}${_extra_ver}.orig.tar.gz"
         0002-Fix-mono-nunit-pkgconfig-name.patch
@@ -43,32 +42,16 @@ build() {
     gtkdocize
     autoreconf -vfi
 
-    [[ -d build-gtk2 ]] || mkdir build-gtk2
-    pushd build-gtk2
-    ../configure --prefix=/usr --with-gtk=2 --disable-static \
-        PYTHON=python2 CSC=/usr/bin/mcs
-    make -j1
-    popd
-
     [[ -d build-gtk3 ]] || mkdir build-gtk3
     pushd build-gtk3
-    ../configure --prefix=/usr --with-gtk=3 --disable-static \
-        PYTHON=python2 CSC=/usr/bin/mcs
+    ../configure --prefix=/usr \
+      --sysconfdir=/etc \
+      --localstatedir=/var \
+      --with-gtk=3 \
+      --enable-gtk-doc \
+      CSC=/usr/bin/mcs
     make -j1
     popd
-}
-
-package_libappindicator-gtk2() {
-    pkgdesc+=" (GTK+ 2 library)"
-    depends=(libindicator-gtk2 libdbusmenu-gtk2)
-
-    #cd "${pkgbase}-${_actual_ver}${_extra_ver}/build-gtk2"
-    cd build-gtk2
-
-    make -j1 DESTDIR="${pkgdir}/" install
-
-    rm "${pkgdir}"/usr/lib/girepository-1.0/AppIndicator3-0.1.typelib    
-    rm "${pkgdir}"/usr/share/gir-1.0/AppIndicator3-0.1.gir
 }
 
 package_libappindicator-gtk3() {
